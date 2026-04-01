@@ -68,15 +68,56 @@ const AUTH_BYPASS_PATTERNS: Array<{
   remediation: string;
 }> = [
   {
-    // Commented out auth check
-    pattern: /\/\/.*(?:auth|check|verify|validate|authenticate|authorize)/i,
+    // Commented-out auth function call (JS/TS).
+    // Requires code-like syntax: commented-out function invocation of a known auth function.
+    // Matches:  // await checkAuth(req)
+    //           // verifyToken(token)
+    //           // authMiddleware(req, res, next)
+    // Does NOT match: // No auth concept here   // Start authorization flow   // auth callback path
+    pattern: /\/\/\s*(?:await\s+)?(?:check(?:Auth|Authentication|Authorization|Token|Session|Permission)|verify(?:Token|Auth|Session|Identity|Access)|authenticate(?:User|Request)?|authorize(?:User|Request)?|require(?:Auth|Login|Permission|Role)|validate(?:Token|Auth|Session|Credential)|auth(?:Middleware|Guard|Handler|Check|Filter|Interceptor)|isAuthenticated|isAuthorized|ensureAuthenticated|passport\.authenticate)\s*\(/i,
     language: ["js", "ts", "mjs", "cjs"],
     title: "Commented-out authentication check",
     description:
-      "An authentication check appears to be commented out. This may indicate a temporarily disabled security control.",
+      "An authentication function call appears to be commented out. This may indicate a temporarily disabled security control.",
     severity: "high",
     remediation:
       "Restore the authentication check. Never ship code with commented-out security controls.",
+  },
+  {
+    // Commented-out auth function call (Python).
+    // Same logic as JS/TS variant but for # comments.
+    pattern: /#\s*(?:await\s+)?(?:check_?(?:auth|authentication|authorization|token|session|permission)|verify_?(?:token|auth|session|identity|access)|authenticate(?:_user|_request)?|authorize(?:_user|_request)?|require_?(?:auth|login|permission|role)|validate_?(?:token|auth|session|credential)|auth_?(?:middleware|guard|handler|check|filter)|is_?authenticated|is_?authorized|ensure_?authenticated)\s*\(/i,
+    language: ["py"],
+    title: "Commented-out authentication check (Python)",
+    description:
+      "An authentication function call appears to be commented out in Python code.",
+    severity: "high",
+    remediation:
+      "Restore the authentication check. Never deploy code with commented-out security controls.",
+  },
+  {
+    // Explicit auth bypass / skip comment (JS/TS).
+    // Matches intentional bypass language like "// TODO: add auth" or "// disabled auth for now".
+    // Does NOT match prose like "no auth concept" — requires unambiguous bypass verbs.
+    pattern: /\/\/.*(?:skip(?:ping)?|disabl(?:ed?|ing)|bypass(?:ing|ed)?|remov(?:ed?|ing)|TODO|FIXME|HACK|XXX)\s+(?:auth(?:entication|orization)?|login\s+check|token\s+(?:verif|check|validat))/i,
+    language: ["js", "ts", "mjs", "cjs"],
+    title: "Intentional authentication bypass comment",
+    description:
+      "A comment explicitly indicates authentication is being skipped, disabled, or bypassed.",
+    severity: "high",
+    remediation:
+      "Restore proper authentication. Never deploy with intentional auth bypasses.",
+  },
+  {
+    // Explicit auth bypass / skip comment (Python).
+    pattern: /#.*(?:skip(?:ping)?|disabl(?:ed?|ing)|bypass(?:ing|ed)?|remov(?:ed?|ing)|TODO|FIXME|HACK|XXX)\s+(?:auth(?:entication|orization)?|login\s+check|token\s+(?:verif|check|validat))/i,
+    language: ["py"],
+    title: "Intentional authentication bypass comment (Python)",
+    description:
+      "A comment explicitly indicates authentication is being skipped, disabled, or bypassed.",
+    severity: "high",
+    remediation:
+      "Restore proper authentication. Never deploy with intentional auth bypasses.",
   },
   {
     // if (false) or always-false auth check
@@ -101,17 +142,6 @@ const AUTH_BYPASS_PATTERNS: Array<{
       "Enable SSL verification. If you need to trust a custom CA, use the ca option instead of disabling verification.",
   },
   {
-    // Python commented-out auth
-    pattern: /#.*(?:auth|check|verify|validate|authenticate|authorize)/i,
-    language: ["py"],
-    title: "Commented-out authentication check (Python)",
-    description:
-      "An authentication check appears to be commented out in Python code.",
-    severity: "high",
-    remediation:
-      "Restore the authentication check. Never deploy code with commented-out security controls.",
-  },
-  {
     // No auth on all routes
     pattern: /app\.use\s*\(\s*['"]\/['"]\s*,.*route|router\.all\s*\(\s*['"]\/\*['"]/,
     language: ["js", "ts", "mjs", "cjs"],
@@ -126,6 +156,21 @@ const AUTH_BYPASS_PATTERNS: Array<{
 
 /** Check for env variables used as secrets (acceptable) vs hardcoded (bad) */
 const ENV_VAR_PATTERN = /process\.env\.[A-Z_]+|os\.environ|getenv/;
+
+/**
+ * Test/example file path patterns to exclude from commented-out auth checks.
+ * These files commonly contain auth function names in describe/it blocks, mock setups,
+ * and documentation comments — not real bypasses.
+ */
+const TEST_FILE_PATTERNS = [
+  /\.(test|spec)\.[jt]sx?$/i,
+  /\/(test|tests|__tests__|__mocks__|fixtures|examples?|demo|docs?)\//i,
+  /\/(test|tests|__tests__|__mocks__|fixtures|examples?|demo|docs?)\/?$/i,
+];
+
+function isTestOrExampleFile(filePath: string): boolean {
+  return TEST_FILE_PATTERNS.some((p) => p.test(filePath));
+}
 
 function getExtension(filePath: string): string {
   return filePath.split(".").pop()?.toLowerCase() ?? "";
@@ -149,6 +194,7 @@ export function scanSourceFileForAuthBypass(
   }
 
   const lines = content.split("\n");
+  const isTestFile = isTestOrExampleFile(filePath);
 
   // Check for hardcoded credentials
   for (let i = 0; i < lines.length; i++) {
@@ -181,8 +227,17 @@ export function scanSourceFileForAuthBypass(
     }
 
     // Check for auth bypass patterns
+    // Skip commented-out-code patterns in test/example files to avoid FPs from
+    // test describe blocks, mock setups, and documentation examples.
     for (const check of AUTH_BYPASS_PATTERNS) {
       if (!check.language.includes(ext)) continue;
+      // Skip commented-out auth patterns in test/example/docs files
+      if (
+        isTestFile &&
+        (check.title.includes("Commented-out") || check.title.includes("Intentional"))
+      ) {
+        continue;
+      }
       const match = line.match(check.pattern);
       if (match) {
         findings.push({
