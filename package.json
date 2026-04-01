@@ -12,10 +12,10 @@
     "tool-poisoning",
     "agent-security"
   ],
-  "homepage": "https://github.com/hawkaa/agent-audit",
+  "homepage": "https://github.com/piiiico/agent-audit",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hawkaa/agent-audit"
+    "url": "https://github.com/piiiico/agent-audit"
   },
   "license": "MIT",
   "type": "module",
