@@ -26,9 +26,9 @@ Most security tools don't understand MCP. `agent-audit` does.
 ## Install
 
 ```bash
-npm install -g agent-audit
+npm install -g @piiiico/agent-audit
 # or
-npx agent-audit --auto
+npx @piiiico/agent-audit --auto
 ```
 
 ## Usage
@@ -124,7 +124,7 @@ for (const finding of result.findings) {
 ## References
 
 - [OWASP Agentic AI Top 10](https://owasp.org/www-project-agentic-ai-top-10/)
-- [MCPTox: Tool Poisoning Attacks on MCP](https://arxiv.org/abs/2406.XXXX)
+- [MCPTox: Tool Poisoning Attacks on MCP](https://arxiv.org/abs/2508.14925)
 - [MCP Security CVE Analysis (Jan–Feb 2026)](https://github.com/invariantlabs-ai/mcp-scan)
 - [Palo Alto: MCP Security Research](https://unit42.paloaltonetworks.com/)
 
