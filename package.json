@@ -1,5 +1,5 @@
 {
-  "name": "agent-audit",
+  "name": "@piiiico/agent-audit",
   "version": "0.1.0",
   "description": "Security scanner for AI agent tooling — MCP servers, tool definitions, and agentic pipelines",
   "keywords": [
@@ -19,6 +19,10 @@
   },
   "license": "MIT",
   "type": "module",
+  "files": [
+    "dist/",
+    "src/"
+  ],
   "bin": {
     "agent-audit": "./dist/cli.js"
   },
