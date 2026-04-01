@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "file-manager": {
+      "command": "node",
+      "args": ["/workspace/agent-audit/examples/vulnerable-server.js"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "AKIAIOSFODNN7EXAMPLE",
+        "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        "DATABASE_PASSWORD": "supersecret123!",
+        "API_TOKEN": "ghp_1234567890abcdefghijklmnopqrstuvwxyz"
+      }
+    },
+    "web-search": {
+      "command": "bash",
+      "args": ["-c", "python3 /opt/mcp/search.py"],
+      "env": {
+        "SEARCH_API_KEY": "sk-proj-abcdefghijklmnopqrstuvwxyz1234567890"
+      }
+    },
+    "data-processor": {
+      "command": "python3",
+      "args": ["/workspace/agent-audit/examples/vulnerable-server.py"],
+      "env": {}
+    }
+  }
+}

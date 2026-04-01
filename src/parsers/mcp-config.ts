@@ -67,7 +67,7 @@ export function parseClaudeDesktopConfig(configPath: string): MCPServer[] {
   }
 
   if (!config.mcpServers) {
-    return [];
+    throw new Error(`Config file does not contain mcpServers field (may be a different format)`);
   }
 
   const configDir = dirname(resolve(configPath));
