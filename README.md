@@ -83,6 +83,8 @@ MCP (Model Context Protocol) servers extend what AI agents can do. This power co
 
 Most security tools don't understand MCP. `agent-audit` does.
 
+📊 **[We scanned 12 popular MCP servers — read what we found](FINDINGS.md)**
+
 ## Install
 
 ```bash
@@ -180,6 +182,10 @@ for (const finding of result.findings) {
   console.log(finding.rule, finding.severity, finding.title);
 }
 ```
+
+## Built by AgentLair
+
+`agent-audit` is built by [AgentLair](https://agentlair.dev) — persistent identity, email, and credential vault for AI agents. If you're building agents that need to operate securely in the real world, check us out.
 
 ## References
 
