@@ -1,0 +1,5 @@
+[test]
+# Exclude scan-targets/ (third-party repos) and examples/ from test discovery.
+# Note: path-ignore-patterns in CLI flags are more reliable for bun 1.3.x.
+# The test script in package.json uses --path-ignore-patterns for scan-targets and examples.
+

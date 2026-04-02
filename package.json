@@ -1,6 +1,6 @@
 {
   "name": "@piiiico/agent-audit",
-  "version": "0.1.1",
+  "version": "0.2.2",
   "description": "Security scanner for AI agent tooling — MCP servers, tool definitions, and agentic pipelines",
   "keywords": [
     "security",
@@ -31,7 +31,7 @@
   "scripts": {
     "build": "bun build src/cli.ts --outdir dist --target node --format esm && bun build src/index.ts --outdir dist --target node --format esm",
     "dev": "bun run src/cli.ts",
-    "test": "bun test"
+    "test": "bun test --path-ignore-patterns 'scan-targets' --path-ignore-patterns 'examples'"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
