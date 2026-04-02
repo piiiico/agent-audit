@@ -1,0 +1,117 @@
+name: "agent-audit"
+description: "Security scanner for MCP servers and AI agent tooling — catch prompt injection, hardcoded secrets, and excessive permissions"
+author: "AgentLair"
+
+branding:
+  icon: "shield"
+  color: "red"
+
+inputs:
+  config-path:
+    description: "Path to MCP config file (Claude Desktop or Cursor format). Leave empty to auto-detect."
+    required: false
+    default: ""
+  min-severity:
+    description: "Minimum severity to report: critical|high|medium|low|info"
+    required: false
+    default: "low"
+  json-output:
+    description: "Output results as JSON (useful for downstream processing)"
+    required: false
+    default: "false"
+  no-source:
+    description: "Skip source file scanning (faster, config-only)"
+    required: false
+    default: "false"
+  fail-on-severity:
+    description: "Fail the action if findings at this severity or above are found. Use 'none' to never fail."
+    required: false
+    default: "high"
+
+outputs:
+  findings-count:
+    description: "Total number of findings"
+    value: ${{ steps.scan.outputs.findings_count }}
+  critical-count:
+    description: "Number of critical findings"
+    value: ${{ steps.scan.outputs.critical_count }}
+  high-count:
+    description: "Number of high findings"
+    value: ${{ steps.scan.outputs.high_count }}
+  scan-results:
+    description: "Path to JSON scan results file"
+    value: ${{ steps.scan.outputs.results_file }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: Run agent-audit scan
+      id: scan
+      shell: bash
+      run: |
+        # Build CLI args
+        ARGS=""
+
+        if [ -n "${{ inputs.config-path }}" ]; then
+          ARGS="$ARGS \"${{ inputs.config-path }}\""
+        else
+          ARGS="$ARGS --auto"
+        fi
+
+        if [ "${{ inputs.json-output }}" = "true" ]; then
+          ARGS="$ARGS --json"
+        fi
+
+        if [ -n "${{ inputs.min-severity }}" ]; then
+          ARGS="$ARGS --min-severity ${{ inputs.min-severity }}"
+        fi
+
+        if [ "${{ inputs.no-source }}" = "true" ]; then
+          ARGS="$ARGS --no-source"
+        fi
+
+        RESULTS_FILE="agent-audit-results-${{ github.run_id }}.json"
+
+        # Run scan and capture output
+        set +e
+        eval "npx --yes @piiiico/agent-audit $ARGS --json" > "$RESULTS_FILE" 2>&1
+        EXIT_CODE=$?
+        set -e
+
+        # Parse outputs from JSON
+        if command -v jq >/dev/null 2>&1 && [ -f "$RESULTS_FILE" ]; then
+          FINDINGS_COUNT=$(jq '.findings | length' "$RESULTS_FILE" 2>/dev/null || echo "0")
+          CRITICAL_COUNT=$(jq '.summary.critical // 0' "$RESULTS_FILE" 2>/dev/null || echo "0")
+          HIGH_COUNT=$(jq '.summary.high // 0' "$RESULTS_FILE" 2>/dev/null || echo "0")
+        else
+          FINDINGS_COUNT=0
+          CRITICAL_COUNT=0
+          HIGH_COUNT=0
+        fi
+
+        echo "findings_count=$FINDINGS_COUNT" >> $GITHUB_OUTPUT
+        echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+        echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+        echo "results_file=$RESULTS_FILE" >> $GITHUB_OUTPUT
+
+        # Print non-JSON report for logs
+        eval "npx --yes @piiiico/agent-audit $ARGS" || true
+
+        # Handle fail-on-severity
+        FAIL_ON="${{ inputs.fail-on-severity }}"
+        if [ "$FAIL_ON" = "none" ]; then
+          exit 0
+        elif [ "$FAIL_ON" = "critical" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
+          echo "::error::agent-audit: $CRITICAL_COUNT critical finding(s) detected."
+          exit 2
+        elif [ "$FAIL_ON" = "high" ] && [ "$((CRITICAL_COUNT + HIGH_COUNT))" -gt 0 ]; then
+          echo "::error::agent-audit: High or critical findings detected ($CRITICAL_COUNT critical, $HIGH_COUNT high)."
+          exit 1
+        elif [ "$EXIT_CODE" -ne 0 ] && [ "$FAIL_ON" != "critical" ] && [ "$FAIL_ON" != "high" ] && [ "$FAIL_ON" != "none" ]; then
+          exit $EXIT_CODE
+        fi

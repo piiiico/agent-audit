@@ -96,10 +96,17 @@ npx @piiiico/agent-audit --auto
 ## Usage
 
 ```bash
-# Auto-detect Claude Desktop config
+# Auto-detect Claude Desktop or Cursor config
 agent-audit --auto
 
+# Scan Cursor MCP config (~/.cursor/mcp.json)
+agent-audit --cursor
+
+# Scan all configs (Claude Desktop + Cursor)
+agent-audit --all
+
 # Scan a specific config file
+agent-audit ~/.cursor/mcp.json
 agent-audit ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 # JSON output for CI/CD
@@ -111,6 +118,63 @@ agent-audit --auto --min-severity high
 # Skip source file scanning (faster)
 agent-audit --auto --no-source
 ```
+
+## Supported Config Formats
+
+| Client | Config Location | Flag |
+|--------|----------------|------|
+| **Claude Desktop** | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)<br>`~/.config/claude/claude_desktop_config.json` (Linux) | `--auto` |
+| **Cursor** | `~/.cursor/mcp.json` | `--cursor` |
+| **Custom JSON** | Any path | Pass path directly |
+
+Use `--all` to scan both Claude Desktop and Cursor configs in one run.
+
+## GitHub Actions
+
+### Quick setup (npx)
+
+```yaml
+- name: Scan MCP servers
+  run: npx --yes @piiiico/agent-audit <your-config.json> --json --min-severity high
+```
+
+### Reusable action
+
+```yaml
+- name: Scan MCP servers
+  uses: piiiico/agent-audit@v1
+  with:
+    config-path: mcp.json        # optional — auto-detects if omitted
+    min-severity: high           # critical|high|medium|low|info
+    fail-on-severity: high       # fail the workflow on high+ findings
+```
+
+### Full workflow example
+
+Copy `.github/workflows/scan.yml` from this repo into your own repo to scan MCP configs on every PR:
+
+```yaml
+# .github/workflows/mcp-scan.yml
+name: MCP Security Scan
+on:
+  pull_request:
+    paths:
+      - "**/*mcp*.json"
+      - ".cursor/mcp.json"
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run agent-audit
+        run: npx --yes @piiiico/agent-audit mcp.json --json --min-severity high
+```
+
+See [`action.yml`](action.yml) for the full marketplace action with inputs/outputs.
 
 ## What It Checks
 
@@ -170,9 +234,23 @@ Use with `--json` for CI/CD integration:
 ## Programmatic API
 
 ```typescript
-import { scan, parseClaudeDesktopConfig } from "agent-audit";
+import {
+  scan,
+  parseClaudeDesktopConfig,
+  parseCursorConfig,
+  parseAnyConfig,   // auto-detects format
+  findAllConfigs,   // finds both Claude Desktop + Cursor configs
+} from "@piiiico/agent-audit";
 
+// Auto-detect format (Claude Desktop or Cursor)
+const servers = parseAnyConfig("/path/to/mcp.json");
+
+// Explicit Claude Desktop
 const servers = parseClaudeDesktopConfig("/path/to/claude_desktop_config.json");
+
+// Explicit Cursor
+const servers = parseCursorConfig("~/.cursor/mcp.json");
+
 const result = await scan(servers, "my-app");
 
 console.log(result.summary);

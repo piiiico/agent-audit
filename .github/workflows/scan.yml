@@ -1,0 +1,111 @@
+name: MCP Security Scan
+
+# Example workflow: add this to your repo to scan MCP configs on every PR.
+# Copy this file to .github/workflows/mcp-scan.yml in your own repo.
+#
+# Usage options:
+#   1. Scan a specific config file (fastest)
+#   2. Auto-detect Claude Desktop / Cursor configs (for agent repos)
+#   3. Fail the PR on high+ findings
+
+on:
+  pull_request:
+    paths:
+      # Trigger on changes to MCP config files (adjust paths as needed)
+      - "**/*mcp*.json"
+      - "**/*claude_desktop_config*"
+      - ".cursor/mcp.json"
+      - "mcp.json"
+  push:
+    branches: [main]
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: "Path to MCP config file (leave empty to auto-detect)"
+        required: false
+        default: ""
+      min_severity:
+        description: "Minimum severity to report (critical|high|medium|low|info)"
+        required: false
+        default: "low"
+
+jobs:
+  mcp-security-scan:
+    name: MCP Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Optional: allow posting findings as PR comments
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run agent-audit
+        id: scan
+        run: |
+          CONFIG_PATH="${{ github.event.inputs.config_path }}"
+          MIN_SEVERITY="${{ github.event.inputs.min_severity || 'low' }}"
+
+          if [ -n "$CONFIG_PATH" ]; then
+            npx --yes @piiiico/agent-audit "$CONFIG_PATH" --json --min-severity "$MIN_SEVERITY" > scan-results.json 2>&1 || EXIT_CODE=$?
+          else
+            # Try to find config in common locations within the repo
+            FOUND_CONFIG=""
+            for path in \
+              "mcp.json" \
+              ".cursor/mcp.json" \
+              "claude_desktop_config.json" \
+              ".claude/claude_desktop_config.json"; do
+              if [ -f "$path" ]; then
+                FOUND_CONFIG="$path"
+                break
+              fi
+            done
+
+            if [ -n "$FOUND_CONFIG" ]; then
+              echo "Found MCP config at: $FOUND_CONFIG"
+              npx --yes @piiiico/agent-audit "$FOUND_CONFIG" --json --min-severity "$MIN_SEVERITY" > scan-results.json 2>&1 || EXIT_CODE=$?
+            else
+              echo "No MCP config file found in repository. Skipping scan."
+              echo '{"findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0}}' > scan-results.json
+              EXIT_CODE=0
+            fi
+          fi
+
+          echo "exit_code=${EXIT_CODE:-0}" >> $GITHUB_OUTPUT
+          cat scan-results.json
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-scan-results
+          path: scan-results.json
+          retention-days: 30
+
+      - name: Check for critical/high findings
+        if: steps.scan.outputs.exit_code != '0'
+        run: |
+          echo "::error::MCP security scan found high or critical severity issues."
+          echo "::error::Review scan-results.json or the uploaded artifact for details."
+          exit ${{ steps.scan.outputs.exit_code }}
+
+  # Optional: stricter job that fails on any finding (medium+)
+  # Uncomment to use:
+  # mcp-security-scan-strict:
+  #   name: MCP Security Scan (strict)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
+  #     - run: npx --yes @piiiico/agent-audit --auto --min-severity medium

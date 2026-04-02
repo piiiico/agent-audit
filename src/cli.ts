@@ -11,13 +11,21 @@
  *   agent-audit --json                 Output JSON report
  */
 
-import { findDefaultConfig, parseClaudeDesktopConfig, parseCustomConfig } from "./parsers/mcp-config.js";
+import {
+  findDefaultConfig,
+  findAllConfigs,
+  parseCursorConfig,
+  parseClaudeDesktopConfig,
+  parseCustomConfig,
+  parseAnyConfig,
+  isCursorConfig,
+} from "./parsers/mcp-config.js";
 import { scan } from "./scanner.js";
 import { renderTerminalReport, getExitCode } from "./reporters/terminal.js";
 import { renderJsonReport } from "./reporters/json.js";
 import type { Severity } from "./types.js";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.1";
 
 function printHelp() {
   console.log(`
@@ -28,7 +36,9 @@ USAGE
   agent-audit [options] [config-path]
 
 OPTIONS
-  --auto            Auto-detect Claude Desktop config file
+  --auto            Auto-detect Claude Desktop or Cursor config file
+  --cursor          Auto-detect Cursor MCP config (~/.cursor/mcp.json)
+  --all             Scan all detected configs (Claude Desktop + Cursor)
   --json            Output JSON report (for CI/CD integration)
   --min-severity    Minimum severity to report: critical|high|medium|low|info
                     (default: low)
@@ -37,14 +47,25 @@ OPTIONS
   --help            Show this help
 
 EXAMPLES
-  # Scan auto-detected Claude Desktop config
+  # Scan auto-detected config (Claude Desktop or Cursor)
   agent-audit --auto
 
+  # Scan Cursor MCP config
+  agent-audit --cursor
+
+  # Scan all configs (Claude Desktop + Cursor)
+  agent-audit --all
+
   # Scan a specific config file
-  agent-audit ~/Library/Application\\ Support/Claude/claude_desktop_config.json
+  agent-audit ~/.cursor/mcp.json
 
   # CI mode: exit 1 on high+ findings, output JSON
   agent-audit --auto --json --min-severity high
+
+SUPPORTED CONFIG FORMATS
+  • Claude Desktop  ~/Library/Application Support/Claude/claude_desktop_config.json
+  • Cursor          ~/.cursor/mcp.json
+  • Custom JSON     Any file path (auto-detects format)
 
 CHECKS
   • Prompt injection in tool descriptions (OWASP A01)
@@ -77,33 +98,86 @@ async function main() {
 
   const jsonOutput = args.includes("--json");
   const autoDetect = args.includes("--auto");
+  const cursorMode = args.includes("--cursor");
+  const allConfigs = args.includes("--all");
   const skipSource = args.includes("--no-source");
 
   const minSeverityArg = args.find((a) => a.startsWith("--min-severity="))?.split("=")[1]
     ?? (args.indexOf("--min-severity") !== -1 ? args[args.indexOf("--min-severity") + 1] : null);
   const minSeverity = (minSeverityArg as Severity | null) ?? "low";
 
-  // Find config path
+  // Find config path(s)
   const nonFlagArgs = args.filter((a) => !a.startsWith("-"));
   const configPath = nonFlagArgs[0] ?? null;
+
+  // --all: scan every detected config
+  if (allConfigs) {
+    const paths = findAllConfigs();
+    if (paths.length === 0) {
+      console.error("❌ No MCP config files found (checked Claude Desktop and Cursor locations).");
+      process.exit(1);
+    }
+    if (!jsonOutput) {
+      console.log(`ℹ️  Found ${paths.length} config file(s): ${paths.join(", ")}`);
+    }
+    let overallExitCode = 0;
+    for (const p of paths) {
+      if (!jsonOutput) console.log(`\n🔍 Scanning: ${p}`);
+      const servers = parseAnyConfig(p);
+      if (servers.length === 0) {
+        if (!jsonOutput) console.log("   No MCP servers found. Skipping.");
+        continue;
+      }
+      const result = await scan(servers, p, { skipSourceScan: skipSource, minSeverity });
+      if (jsonOutput) {
+        console.log(renderJsonReport(result));
+      } else {
+        renderTerminalReport(result);
+      }
+      overallExitCode = Math.max(overallExitCode, getExitCode(result));
+    }
+    process.exit(overallExitCode);
+  }
 
   let resolvedPath: string | null = null;
 
   if (configPath) {
     resolvedPath = configPath;
+  } else if (cursorMode) {
+    // Look specifically for Cursor config
+    const { homedir } = await import("os");
+    const { join } = await import("path");
+    const home = homedir();
+    const cursorPaths = [
+      join(home, ".cursor", "mcp.json"),
+      join(home, "AppData", "Roaming", "Cursor", "mcp.json"),
+      join(home, "Library", "Application Support", "Cursor", "mcp.json"),
+    ];
+    const { existsSync } = await import("fs");
+    for (const p of cursorPaths) {
+      if (existsSync(p)) { resolvedPath = p; break; }
+    }
+    if (!resolvedPath) {
+      console.error("❌ Could not find Cursor MCP config (~/.cursor/mcp.json).");
+      console.error("   Make sure Cursor is installed and has MCP servers configured.");
+      process.exit(1);
+    }
+    if (!jsonOutput) console.log(`ℹ️  Cursor config: ${resolvedPath}`);
   } else if (autoDetect) {
     resolvedPath = findDefaultConfig();
     if (!resolvedPath) {
       console.error(
-        "❌ Could not find Claude Desktop config. Try specifying the path explicitly."
+        "❌ Could not find Claude Desktop or Cursor config. Try specifying the path explicitly."
       );
       console.error("   Searched locations:");
       console.error("     ~/Library/Application Support/Claude/claude_desktop_config.json");
       console.error("     ~/.config/claude/claude_desktop_config.json");
+      console.error("     ~/.cursor/mcp.json");
       process.exit(1);
     }
     if (!jsonOutput) {
-      console.log(`ℹ️  Auto-detected config: ${resolvedPath}`);
+      const configType = isCursorConfig(resolvedPath) ? "Cursor" : "Claude Desktop";
+      console.log(`ℹ️  Auto-detected ${configType} config: ${resolvedPath}`);
     }
   } else {
     // No config specified — try auto-detect silently
@@ -115,17 +189,18 @@ async function main() {
       process.exit(1);
     }
     if (!jsonOutput) {
-      console.log(`ℹ️  Using config: ${resolvedPath}`);
+      const configType = isCursorConfig(resolvedPath) ? "Cursor" : "Claude Desktop";
+      console.log(`ℹ️  Using ${configType} config: ${resolvedPath}`);
     }
   }
 
-  // Parse config
+  // Parse config (auto-detect format)
   let servers;
   try {
-    servers = parseClaudeDesktopConfig(resolvedPath);
+    servers = parseAnyConfig(resolvedPath!);
   } catch {
     try {
-      servers = parseCustomConfig(resolvedPath);
+      servers = parseCustomConfig(resolvedPath!);
     } catch (err2) {
       console.error(`❌ Failed to parse config: ${err2}`);
       process.exit(1);
@@ -144,7 +219,7 @@ async function main() {
   }
 
   // Run scan
-  const result = await scan(servers, resolvedPath, {
+  const result = await scan(servers, resolvedPath!, {
     skipSourceScan: skipSource,
     minSeverity,
   });

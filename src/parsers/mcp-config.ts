@@ -1,8 +1,8 @@
 /**
  * MCP Configuration Parser
  *
- * Parses Claude Desktop config files and other MCP server configuration formats
- * to extract server definitions for scanning.
+ * Parses Claude Desktop config files, Cursor config files, and other MCP
+ * server configuration formats to extract server definitions for scanning.
  */
 
 import { readFileSync, existsSync } from "fs";
@@ -23,8 +23,29 @@ interface ClaudeDesktopConfig {
   >;
 }
 
+/**
+ * Cursor MCP config format.
+ * Cursor uses ~/.cursor/mcp.json with an identical mcpServers structure,
+ * but may include a top-level "version" field.
+ * Reference: https://docs.cursor.com/context/model-context-protocol
+ */
+interface CursorMcpConfig {
+  version?: number;
+  mcpServers?: Record<
+    string,
+    {
+      command?: string;
+      args?: string[];
+      env?: Record<string, string>;
+      url?: string;
+      /** Cursor-specific: transport type (stdio | sse) */
+      transport?: "stdio" | "sse";
+    }
+  >;
+}
+
 /** Common locations for Claude Desktop config */
-function getDefaultConfigPaths(): string[] {
+function getClaudeDesktopConfigPaths(): string[] {
   const home = homedir();
   return [
     // macOS
@@ -38,14 +59,109 @@ function getDefaultConfigPaths(): string[] {
   ];
 }
 
+/** Common locations for Cursor MCP config */
+function getCursorConfigPaths(): string[] {
+  const home = homedir();
+  return [
+    // Primary location (all platforms)
+    join(home, ".cursor", "mcp.json"),
+    // Windows alternate
+    join(home, "AppData", "Roaming", "Cursor", "mcp.json"),
+    // macOS alternate (some versions)
+    join(home, "Library", "Application Support", "Cursor", "mcp.json"),
+  ];
+}
+
 /**
- * Find the default MCP config file on the current system
+ * Find the default MCP config file on the current system.
+ * Checks both Claude Desktop and Cursor locations.
+ * Returns the first found path, preferring Claude Desktop.
  */
 export function findDefaultConfig(): string | null {
-  for (const path of getDefaultConfigPaths()) {
+  for (const path of [...getClaudeDesktopConfigPaths(), ...getCursorConfigPaths()]) {
     if (existsSync(path)) return path;
   }
   return null;
+}
+
+/**
+ * Find all MCP config files on the current system (Claude Desktop + Cursor).
+ * Returns all found paths, useful for multi-client scanning.
+ */
+export function findAllConfigs(): string[] {
+  const found: string[] = [];
+  for (const path of [...getClaudeDesktopConfigPaths(), ...getCursorConfigPaths()]) {
+    if (existsSync(path)) found.push(path);
+  }
+  return found;
+}
+
+/**
+ * Detect whether a config file is likely a Cursor MCP config.
+ * Cursor configs may have a "version" field or lack Claude-specific keys.
+ */
+export function isCursorConfig(configPath: string): boolean {
+  try {
+    const raw = readFileSync(configPath, "utf-8");
+    const config = JSON.parse(raw) as CursorMcpConfig;
+    // Cursor configs have a numeric "version" field, or the path itself is a signal
+    if (typeof config.version === "number") return true;
+    if (configPath.includes(".cursor") || configPath.toLowerCase().includes("cursor")) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Parse a Cursor MCP config file (~/.cursor/mcp.json) and return the list of MCP servers.
+ * Cursor uses the same mcpServers structure as Claude Desktop, with optional extras.
+ */
+export function parseCursorConfig(configPath: string): MCPServer[] {
+  let raw: string;
+  try {
+    raw = readFileSync(configPath, "utf-8");
+  } catch (err) {
+    throw new Error(`Cannot read Cursor config file at ${configPath}: ${err}`);
+  }
+
+  let config: CursorMcpConfig;
+  try {
+    config = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(`Invalid JSON in Cursor config file ${configPath}: ${err}`);
+  }
+
+  if (!config.mcpServers) {
+    throw new Error(`Cursor config at ${configPath} does not contain mcpServers field`);
+  }
+
+  const configDir = dirname(resolve(configPath));
+
+  return Object.entries(config.mcpServers).map(([name, def]) => {
+    const server: MCPServer = {
+      name,
+      command: def.command,
+      args: def.args,
+      env: def.env,
+      url: def.url,
+    };
+
+    server.sourceFiles = resolveSourceFiles(def.command, def.args ?? [], configDir);
+
+    return server;
+  });
+}
+
+/**
+ * Auto-detect and parse any supported MCP config format.
+ * Tries Claude Desktop format first, then Cursor format.
+ */
+export function parseAnyConfig(configPath: string): MCPServer[] {
+  if (isCursorConfig(configPath)) {
+    return parseCursorConfig(configPath);
+  }
+  return parseClaudeDesktopConfig(configPath);
 }
 
 /**
