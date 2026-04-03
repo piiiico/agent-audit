@@ -4,6 +4,8 @@
 
 Catch prompt injection, command injection, hardcoded secrets, and excessive permissions in your MCP server configurations — before attackers do.
 
+![agent-audit demo](examples/demo.svg)
+
 ```
 $ npx agent-audit vulnerable-config.json
 🔍 Scanning 3 MCP server(s)...
