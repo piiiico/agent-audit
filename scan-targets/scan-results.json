@@ -1,20 +1,21 @@
 {
   "aggregate": {
-    "critical": 28,
-    "high": 11,
+    "critical": 12,
+    "high": 17,
     "medium": 29,
     "low": 0,
     "info": 0,
-    "totalFindings": 68,
-    "totalRepos": 11,
-    "totalSourceFiles": 419,
-    "reposWithFindings": 11,
+    "totalFindings": 58,
+    "totalRepos": 12,
+    "totalSourceFiles": 1130,
+    "reposWithFindings": 12,
     "findingsByRule": {
-      "command-injection/server-command: Shell interpreter as MCP server command": 11,
+      "command-injection/server-command: Shell interpreter as MCP server command": 12,
       "command-injection/source-pattern: child_process module import (non-execFile)": 29,
-      "auth-bypass/hardcoded-credentials: Hardcoded API key": 13,
       "command-injection/source-pattern: subprocess with shell=True": 2,
-      "auth-bypass/hardcoded-credentials: Hardcoded secret or token": 10,
+      "command-injection/source-pattern: exec() usage": 5,
+      "auth-bypass/hardcoded-credentials: Hardcoded API key": 4,
+      "auth-bypass/hardcoded-credentials: Hardcoded secret or token": 3,
       "command-injection/source-pattern: Template literal in exec() call": 3
     },
     "findingsByRepo": [
@@ -99,26 +100,12 @@
       {
         "name": "anthropic-quickstarts",
         "sourceFiles": 82,
-        "critical": 10,
+        "critical": 2,
         "high": 1,
         "medium": 0,
         "low": 0,
         "info": 0,
         "findings": [
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/autonomous-coding/autonomous_agent_demo.py",
-              "line": 84,
-              "field": "source_code",
-              "snippet": "print(\"  export ANTHROPIC_API_KEY='y...[REDACTED]\")"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
           {
             "rule": "command-injection/source-pattern",
             "title": "subprocess with shell=True",
@@ -150,104 +137,6 @@
             "remediation": "Remove shell=True. Pass the command as a list: subprocess.run(['cmd', 'arg1', 'arg2'])."
           },
           {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/computer-use-demo/tests/loop_test.py",
-              "line": 49,
-              "field": "source_code",
-              "snippet": "api_key=\"t...[REDACTED],"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_streamlit_helpers.py",
-              "line": 201,
-              "field": "source_code",
-              "snippet": "mock_state.api_key = ...[REDACTED]"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-              "line": 352,
-              "field": "source_code",
-              "snippet": "api_key=\"t...[REDACTED],"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-              "line": 410,
-              "field": "source_code",
-              "snippet": "api_key=\"t...[REDACTED]"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-              "line": 463,
-              "field": "source_code",
-              "snippet": "api_key=\"t...[REDACTED],"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-              "line": 505,
-              "field": "source_code",
-              "snippet": "api_key=\"t...[REDACTED]"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/conftest.py",
-              "line": 24,
-              "field": "source_code",
-              "snippet": "mock_state.api_key = ...[REDACTED]"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
             "rule": "command-injection/server-command",
             "title": "Shell interpreter as MCP server command",
             "description": "MCP server runs a shell interpreter directly. This provides maximum attack surface for command injection via tool arguments. (server: anthropic-quickstarts, command: node)",
@@ -259,6 +148,105 @@
             },
             "owasp": "A03:2025 - Insufficient Input/Output Validation",
             "remediation": "Use a specific application binary as the command, not a shell interpreter. The application should validate all inputs."
+          }
+        ]
+      },
+      {
+        "name": "fastmcp",
+        "sourceFiles": 711,
+        "critical": 0,
+        "high": 6,
+        "medium": 0,
+        "low": 0,
+        "info": 0,
+        "findings": [
+          {
+            "rule": "command-injection/server-command",
+            "title": "Shell interpreter as MCP server command",
+            "description": "MCP server runs a shell interpreter directly. This provides maximum attack surface for command injection via tool arguments. (server: fastmcp, command: node)",
+            "severity": "high",
+            "location": {
+              "source": "fastmcp",
+              "field": "command",
+              "snippet": "node"
+            },
+            "owasp": "A03:2025 - Insufficient Input/Output Validation",
+            "remediation": "Use a specific application binary as the command, not a shell interpreter. The application should validate all inputs."
+          },
+          {
+            "rule": "command-injection/source-pattern",
+            "title": "exec() usage",
+            "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+            "severity": "high",
+            "location": {
+              "source": "/workspace/agent-audit/scan-targets/fastmcp/src/fastmcp/experimental/transforms/code_mode.py",
+              "line": 78,
+              "field": "source_code",
+              "snippet": "sandbox — never with plain ``exec()``.  Use ``MontySandboxProvider``"
+            },
+            "owasp": "A03:2025 - Insufficient Input/Output Validation",
+            "cve": [],
+            "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+          },
+          {
+            "rule": "command-injection/source-pattern",
+            "title": "exec() usage",
+            "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+            "severity": "high",
+            "location": {
+              "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode_discovery.py",
+              "line": 53,
+              "field": "source_code",
+              "snippet": "\"\"\"UNSAFE: Uses exec() for testing only. Never use in production.\"\"\""
+            },
+            "owasp": "A03:2025 - Insufficient Input/Output Validation",
+            "cve": [],
+            "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+          },
+          {
+            "rule": "command-injection/source-pattern",
+            "title": "exec() usage",
+            "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+            "severity": "high",
+            "location": {
+              "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode_discovery.py",
+              "line": 76,
+              "field": "source_code",
+              "snippet": "exec(wrapped, namespace, namespace)"
+            },
+            "owasp": "A03:2025 - Insufficient Input/Output Validation",
+            "cve": [],
+            "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+          },
+          {
+            "rule": "command-injection/source-pattern",
+            "title": "exec() usage",
+            "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+            "severity": "high",
+            "location": {
+              "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode.py",
+              "line": 62,
+              "field": "source_code",
+              "snippet": "\"\"\"UNSAFE: Uses exec() for testing only. Never use in production.\"\"\""
+            },
+            "owasp": "A03:2025 - Insufficient Input/Output Validation",
+            "cve": [],
+            "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+          },
+          {
+            "rule": "command-injection/source-pattern",
+            "title": "exec() usage",
+            "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+            "severity": "high",
+            "location": {
+              "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode.py",
+              "line": 85,
+              "field": "source_code",
+              "snippet": "exec(wrapped, namespace, namespace)"
+            },
+            "owasp": "A03:2025 - Insufficient Input/Output Validation",
+            "cve": [],
+            "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
           }
         ]
       },
@@ -289,40 +277,12 @@
       {
         "name": "mcp-playwright",
         "sourceFiles": 61,
-        "critical": 2,
+        "critical": 0,
         "high": 1,
         "medium": 3,
         "low": 0,
         "info": 0,
         "findings": [
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/mcp-playwright/src/__tests__/tools/api/requests.test.ts",
-              "line": 458,
-              "field": "source_code",
-              "snippet": "token: 'be...[REDACTED],"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/mcp-playwright/src/__tests__/tools/api/requests.test.ts",
-              "line": 485,
-              "field": "source_code",
-              "snippet": "token: 'be...[REDACTED],"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
           {
             "rule": "command-injection/server-command",
             "title": "Shell interpreter as MCP server command",
@@ -434,7 +394,7 @@
       {
         "name": "desktop-commander",
         "sourceFiles": 151,
-        "critical": 16,
+        "critical": 10,
         "high": 1,
         "medium": 24,
         "low": 0,
@@ -456,20 +416,6 @@
           },
           {
             "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/desktop-commander/setup-claude-server.js",
-              "line": 15,
-              "field": "source_code",
-              "snippet": "const GA_API_SECRET = '...[REDACTED];   // Replace with your GA4 API Secre"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
             "title": "Hardcoded API key",
             "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
             "severity": "critical",
@@ -478,20 +424,6 @@
               "line": 15,
               "field": "source_code",
               "snippet": "const GA_API_SECRET...[REDACTED];   // Replace with your GA4 API Secret"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/desktop-commander/uninstall-claude-server.js",
-              "line": 15,
-              "field": "source_code",
-              "snippet": "const GA_API_SECRET = '...[REDACTED];   // Replace with your GA4 API Secret"
             },
             "owasp": "A07:2025 - Insecure Credential Storage",
             "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
@@ -554,48 +486,6 @@
           },
           {
             "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/desktop-commander/src/utils/capture.ts",
-              "line": 432,
-              "field": "source_code",
-              "snippet": "const GA_API_SECRET = '...[REDACTED];"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded API key",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/desktop-commander/src/utils/capture.ts",
-              "line": 445,
-              "field": "source_code",
-              "snippet": "const GA_API_SECRET...[REDACTED];"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/desktop-commander/src/utils/capture.ts",
-              "line": 445,
-              "field": "source_code",
-              "snippet": "const GA_API_SECRET = '...[REDACTED];"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
             "title": "Hardcoded API key",
             "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
             "severity": "critical",
@@ -604,20 +494,6 @@
               "line": 78,
               "field": "source_code",
               "snippet": "const GA_API_SECRET...[REDACTED];"
-            },
-            "owasp": "A07:2025 - Insecure Credential Storage",
-            "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-          },
-          {
-            "rule": "auth-bypass/hardcoded-credentials",
-            "title": "Hardcoded secret or token",
-            "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-            "severity": "critical",
-            "location": {
-              "source": "/workspace/agent-audit/scan-targets/desktop-commander/track-installation.js",
-              "line": 78,
-              "field": "source_code",
-              "snippet": "const GA_API_SECRET = '...[REDACTED];"
             },
             "owasp": "A07:2025 - Insecure Credential Storage",
             "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
@@ -1120,7 +996,7 @@
     {
       "name": "mcp-bigquery",
       "sourceFileCount": 1,
-      "timestamp": "2026-04-01T21:48:45.403Z",
+      "timestamp": "2026-04-02T13:51:49.695Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-bigquery",
       "findings": [
         {
@@ -1144,12 +1020,12 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 6
+      "durationMs": 10
     },
     {
       "name": "mcp-official-servers",
       "sourceFileCount": 77,
-      "timestamp": "2026-04-01T21:48:45.441Z",
+      "timestamp": "2026-04-02T13:51:49.813Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-official-servers",
       "findings": [
         {
@@ -1203,28 +1079,14 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 35
+      "durationMs": 115
     },
     {
       "name": "anthropic-quickstarts",
       "sourceFileCount": 82,
-      "timestamp": "2026-04-01T21:48:45.471Z",
+      "timestamp": "2026-04-02T13:51:49.932Z",
       "target": "/workspace/agent-audit/scan-targets/anthropic-quickstarts",
       "findings": [
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/autonomous-coding/autonomous_agent_demo.py",
-            "line": 84,
-            "field": "source_code",
-            "snippet": "print(\"  export ANTHROPIC_API_KEY='y...[REDACTED]\")"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
         {
           "rule": "command-injection/source-pattern",
           "title": "subprocess with shell=True",
@@ -1256,104 +1118,6 @@
           "remediation": "Remove shell=True. Pass the command as a list: subprocess.run(['cmd', 'arg1', 'arg2'])."
         },
         {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/computer-use-demo/tests/loop_test.py",
-            "line": 49,
-            "field": "source_code",
-            "snippet": "api_key=\"t...[REDACTED],"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_streamlit_helpers.py",
-            "line": 201,
-            "field": "source_code",
-            "snippet": "mock_state.api_key = ...[REDACTED]"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-            "line": 352,
-            "field": "source_code",
-            "snippet": "api_key=\"t...[REDACTED],"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-            "line": 410,
-            "field": "source_code",
-            "snippet": "api_key=\"t...[REDACTED]"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-            "line": 463,
-            "field": "source_code",
-            "snippet": "api_key=\"t...[REDACTED],"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/test_sampling_loop.py",
-            "line": 505,
-            "field": "source_code",
-            "snippet": "api_key=\"t...[REDACTED]"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/anthropic-quickstarts/browser-use-demo/tests/conftest.py",
-            "line": 24,
-            "field": "source_code",
-            "snippet": "mock_state.api_key = ...[REDACTED]"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
           "rule": "command-injection/server-command",
           "title": "Shell interpreter as MCP server command",
           "description": "MCP server runs a shell interpreter directly. This provides maximum attack surface for command injection via tool arguments. (server: anthropic-quickstarts, command: node)",
@@ -1368,18 +1132,122 @@
         }
       ],
       "summary": {
-        "critical": 10,
+        "critical": 2,
         "high": 1,
         "medium": 0,
         "low": 0,
         "info": 0
       },
-      "durationMs": 27
+      "durationMs": 115
+    },
+    {
+      "name": "fastmcp",
+      "sourceFileCount": 711,
+      "timestamp": "2026-04-02T13:51:50.841Z",
+      "target": "/workspace/agent-audit/scan-targets/fastmcp",
+      "findings": [
+        {
+          "rule": "command-injection/server-command",
+          "title": "Shell interpreter as MCP server command",
+          "description": "MCP server runs a shell interpreter directly. This provides maximum attack surface for command injection via tool arguments. (server: fastmcp, command: node)",
+          "severity": "high",
+          "location": {
+            "source": "fastmcp",
+            "field": "command",
+            "snippet": "node"
+          },
+          "owasp": "A03:2025 - Insufficient Input/Output Validation",
+          "remediation": "Use a specific application binary as the command, not a shell interpreter. The application should validate all inputs."
+        },
+        {
+          "rule": "command-injection/source-pattern",
+          "title": "exec() usage",
+          "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+          "severity": "high",
+          "location": {
+            "source": "/workspace/agent-audit/scan-targets/fastmcp/src/fastmcp/experimental/transforms/code_mode.py",
+            "line": 78,
+            "field": "source_code",
+            "snippet": "sandbox — never with plain ``exec()``.  Use ``MontySandboxProvider``"
+          },
+          "owasp": "A03:2025 - Insufficient Input/Output Validation",
+          "cve": [],
+          "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+        },
+        {
+          "rule": "command-injection/source-pattern",
+          "title": "exec() usage",
+          "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+          "severity": "high",
+          "location": {
+            "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode_discovery.py",
+            "line": 53,
+            "field": "source_code",
+            "snippet": "\"\"\"UNSAFE: Uses exec() for testing only. Never use in production.\"\"\""
+          },
+          "owasp": "A03:2025 - Insufficient Input/Output Validation",
+          "cve": [],
+          "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+        },
+        {
+          "rule": "command-injection/source-pattern",
+          "title": "exec() usage",
+          "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+          "severity": "high",
+          "location": {
+            "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode_discovery.py",
+            "line": 76,
+            "field": "source_code",
+            "snippet": "exec(wrapped, namespace, namespace)"
+          },
+          "owasp": "A03:2025 - Insufficient Input/Output Validation",
+          "cve": [],
+          "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+        },
+        {
+          "rule": "command-injection/source-pattern",
+          "title": "exec() usage",
+          "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+          "severity": "high",
+          "location": {
+            "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode.py",
+            "line": 62,
+            "field": "source_code",
+            "snippet": "\"\"\"UNSAFE: Uses exec() for testing only. Never use in production.\"\"\""
+          },
+          "owasp": "A03:2025 - Insufficient Input/Output Validation",
+          "cve": [],
+          "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+        },
+        {
+          "rule": "command-injection/source-pattern",
+          "title": "exec() usage",
+          "description": "Python exec() executes arbitrary code strings. Dangerous if any user input can reach it.",
+          "severity": "high",
+          "location": {
+            "source": "/workspace/agent-audit/scan-targets/fastmcp/tests/experimental/transforms/test_code_mode.py",
+            "line": 85,
+            "field": "source_code",
+            "snippet": "exec(wrapped, namespace, namespace)"
+          },
+          "owasp": "A03:2025 - Insufficient Input/Output Validation",
+          "cve": [],
+          "remediation": "Remove exec() usage. If dynamic execution is needed, use a sandboxed environment."
+        }
+      ],
+      "summary": {
+        "critical": 0,
+        "high": 6,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      },
+      "durationMs": 889
     },
     {
       "name": "mcp-mongo",
       "sourceFileCount": 14,
-      "timestamp": "2026-04-01T21:48:45.474Z",
+      "timestamp": "2026-04-02T13:51:50.859Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-mongo",
       "findings": [
         {
@@ -1403,42 +1271,14 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 2
+      "durationMs": 17
     },
     {
       "name": "mcp-playwright",
       "sourceFileCount": 61,
-      "timestamp": "2026-04-01T21:48:45.497Z",
+      "timestamp": "2026-04-02T13:51:50.944Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-playwright",
       "findings": [
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/mcp-playwright/src/__tests__/tools/api/requests.test.ts",
-            "line": 458,
-            "field": "source_code",
-            "snippet": "token: 'be...[REDACTED],"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/mcp-playwright/src/__tests__/tools/api/requests.test.ts",
-            "line": 485,
-            "field": "source_code",
-            "snippet": "token: 'be...[REDACTED],"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
         {
           "rule": "command-injection/server-command",
           "title": "Shell interpreter as MCP server command",
@@ -1499,18 +1339,18 @@
         }
       ],
       "summary": {
-        "critical": 2,
+        "critical": 0,
         "high": 1,
         "medium": 3,
         "low": 0,
         "info": 0
       },
-      "durationMs": 21
+      "durationMs": 81
     },
     {
       "name": "exa-mcp",
       "sourceFileCount": 22,
-      "timestamp": "2026-04-01T21:48:45.505Z",
+      "timestamp": "2026-04-02T13:51:50.977Z",
       "target": "/workspace/agent-audit/scan-targets/exa-mcp",
       "findings": [
         {
@@ -1534,12 +1374,12 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 7
+      "durationMs": 32
     },
     {
       "name": "mcp-yt-transcript",
       "sourceFileCount": 3,
-      "timestamp": "2026-04-01T21:48:45.507Z",
+      "timestamp": "2026-04-02T13:51:50.983Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-yt-transcript",
       "findings": [
         {
@@ -1563,12 +1403,12 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 2
+      "durationMs": 6
     },
     {
       "name": "desktop-commander",
       "sourceFileCount": 151,
-      "timestamp": "2026-04-01T21:48:45.585Z",
+      "timestamp": "2026-04-02T13:51:51.218Z",
       "target": "/workspace/agent-audit/scan-targets/desktop-commander",
       "findings": [
         {
@@ -1587,20 +1427,6 @@
         },
         {
           "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/desktop-commander/setup-claude-server.js",
-            "line": 15,
-            "field": "source_code",
-            "snippet": "const GA_API_SECRET = '...[REDACTED];   // Replace with your GA4 API Secre"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
           "title": "Hardcoded API key",
           "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
           "severity": "critical",
@@ -1609,20 +1435,6 @@
             "line": 15,
             "field": "source_code",
             "snippet": "const GA_API_SECRET...[REDACTED];   // Replace with your GA4 API Secret"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/desktop-commander/uninstall-claude-server.js",
-            "line": 15,
-            "field": "source_code",
-            "snippet": "const GA_API_SECRET = '...[REDACTED];   // Replace with your GA4 API Secret"
           },
           "owasp": "A07:2025 - Insecure Credential Storage",
           "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
@@ -1685,48 +1497,6 @@
         },
         {
           "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/desktop-commander/src/utils/capture.ts",
-            "line": 432,
-            "field": "source_code",
-            "snippet": "const GA_API_SECRET = '...[REDACTED];"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded API key",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/desktop-commander/src/utils/capture.ts",
-            "line": 445,
-            "field": "source_code",
-            "snippet": "const GA_API_SECRET...[REDACTED];"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/desktop-commander/src/utils/capture.ts",
-            "line": 445,
-            "field": "source_code",
-            "snippet": "const GA_API_SECRET = '...[REDACTED];"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
           "title": "Hardcoded API key",
           "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
           "severity": "critical",
@@ -1735,20 +1505,6 @@
             "line": 78,
             "field": "source_code",
             "snippet": "const GA_API_SECRET...[REDACTED];"
-          },
-          "owasp": "A07:2025 - Insecure Credential Storage",
-          "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
-        },
-        {
-          "rule": "auth-bypass/hardcoded-credentials",
-          "title": "Hardcoded secret or token",
-          "description": "Hardcoded credential found in source file. This credential is embedded in the code and will be exposed in source control.",
-          "severity": "critical",
-          "location": {
-            "source": "/workspace/agent-audit/scan-targets/desktop-commander/track-installation.js",
-            "line": 78,
-            "field": "source_code",
-            "snippet": "const GA_API_SECRET = '...[REDACTED];"
           },
           "owasp": "A07:2025 - Insecure Credential Storage",
           "remediation": "Move credentials to environment variables or a secrets manager. Never commit credentials to source control."
@@ -2173,18 +1929,18 @@
         }
       ],
       "summary": {
-        "critical": 16,
+        "critical": 10,
         "high": 1,
         "medium": 24,
         "low": 0,
         "info": 0
       },
-      "durationMs": 75
+      "durationMs": 231
     },
     {
       "name": "mcp-mysql",
       "sourceFileCount": 4,
-      "timestamp": "2026-04-01T21:48:45.586Z",
+      "timestamp": "2026-04-02T13:51:51.223Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-mysql",
       "findings": [
         {
@@ -2208,12 +1964,12 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 1
+      "durationMs": 5
     },
     {
       "name": "mcp-ragdocs",
       "sourceFileCount": 3,
-      "timestamp": "2026-04-01T21:48:45.587Z",
+      "timestamp": "2026-04-02T13:51:51.228Z",
       "target": "/workspace/agent-audit/scan-targets/mcp-ragdocs",
       "findings": [
         {
@@ -2237,12 +1993,12 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 1
+      "durationMs": 5
     },
     {
       "name": "tavily-mcp",
       "sourceFileCount": 1,
-      "timestamp": "2026-04-01T21:48:45.589Z",
+      "timestamp": "2026-04-02T13:51:51.231Z",
       "target": "/workspace/agent-audit/scan-targets/tavily-mcp",
       "findings": [
         {
@@ -2266,7 +2022,7 @@
         "low": 0,
         "info": 0
       },
-      "durationMs": 2
+      "durationMs": 3
     }
   ]
 }

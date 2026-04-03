@@ -158,9 +158,8 @@ const AUTH_BYPASS_PATTERNS: Array<{
 const ENV_VAR_PATTERN = /process\.env\.[A-Z_]+|os\.environ|getenv/;
 
 /**
- * Test/example file path patterns to exclude from commented-out auth checks.
- * These files commonly contain auth function names in describe/it blocks, mock setups,
- * and documentation comments — not real bypasses.
+ * Test/example file path patterns — excluded from ALL credential and auth-bypass checks.
+ * Test files legitimately use mock credentials and disable SSL for local testing.
  */
 const TEST_FILE_PATTERNS = [
   /\.(test|spec)\.[jt]sx?$/i,
@@ -170,6 +169,30 @@ const TEST_FILE_PATTERNS = [
 
 function isTestOrExampleFile(filePath: string): boolean {
   return TEST_FILE_PATTERNS.some((p) => p.test(filePath));
+}
+
+/**
+ * Placeholder credential patterns — strings that are clearly documentation examples,
+ * not real secrets. Used in docstrings, READMEs, and example code.
+ */
+const PLACEHOLDER_VALUE_PATTERN = /^(your|example|placeholder|changeme|replace[_-]?me|change[_-]?me|xxx|insert|add[_-]?your|put[_-]?your|sample|fake|dummy|mock|todo|fill[_-]?in|<[^>]+>|\[.+\]|sk_test_|sk_live_test)/i;
+const REPETITIVE_CHAR_PATTERN = /^(.)\1{7,}$/; // e.g. "aaaaaaaa", "12345678"
+// Matches doc-example patterns: "abc123...", "secret-key", "discord-client-secret-abc123..."
+// Ending with "..." is a docs shorthand. Pure word-with-hyphens (no numbers other than 123) is description.
+const DOC_EXAMPLE_SUFFIX_PATTERN = /\.\.\.$/;
+const DESCRIPTION_LIKE_PATTERN = /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*){1,5}$/i; // e.g. "secret-key", "api-key-here"
+const ABC123_PATTERN = /abc123/i; // extremely common placeholder in docs
+
+function isPlaceholderCredential(matchedValue: string): boolean {
+  // Extract just the string literal value (strip surrounding quotes)
+  const inner = matchedValue.replace(/^.*?["']([^"']*)["'].*$/, "$1");
+  if (!inner || inner.length < 4) return false;
+  if (PLACEHOLDER_VALUE_PATTERN.test(inner)) return true;
+  if (REPETITIVE_CHAR_PATTERN.test(inner)) return true;
+  if (DOC_EXAMPLE_SUFFIX_PATTERN.test(inner)) return true; // "abc123..." ends with ...
+  if (ABC123_PATTERN.test(inner)) return true;
+  if (DESCRIPTION_LIKE_PATTERN.test(inner)) return true; // "secret-key", "my-token"
+  return false;
 }
 
 function getExtension(filePath: string): string {
@@ -196,16 +219,31 @@ export function scanSourceFileForAuthBypass(
   const lines = content.split("\n");
   const isTestFile = isTestOrExampleFile(filePath);
 
+  // Track lines that already have a credential finding to avoid double-reporting
+  // when multiple patterns match the same line (e.g. client_secret matches both
+  // "secret/token" and "private_key/client_secret" patterns).
+  const linesWithCredentialFindings = new Set<number>();
+
   // Check for hardcoded credentials
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  // Skip entirely for test/example files — test mocks and fixture data are not real secrets.
+  if (!isTestFile) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
 
-    // Skip lines that use environment variables (those are fine)
-    if (ENV_VAR_PATTERN.test(line)) continue;
+      // Skip lines that use environment variables (those are fine)
+      if (ENV_VAR_PATTERN.test(line)) continue;
 
-    for (const check of HARDCODED_CREDENTIAL_PATTERNS) {
-      const match = line.match(check.pattern);
-      if (match) {
+      for (const check of HARDCODED_CREDENTIAL_PATTERNS) {
+        // Avoid double-reporting the same line under different patterns
+        if (linesWithCredentialFindings.has(i)) break;
+
+        const match = line.match(check.pattern);
+        if (!match) continue;
+
+        // Skip placeholder / documentation-example values ("your-secret", "example-key", etc.)
+        if (isPlaceholderCredential(match[0])) continue;
+
+        linesWithCredentialFindings.add(i);
         // Redact the actual credential in the snippet
         const redacted = line.replace(match[0], match[0].slice(0, 10) + "...[REDACTED]");
         findings.push({
@@ -225,35 +263,33 @@ export function scanSourceFileForAuthBypass(
         });
       }
     }
+  }
 
-    // Check for auth bypass patterns
-    // Skip commented-out-code patterns in test/example files to avoid FPs from
-    // test describe blocks, mock setups, and documentation examples.
-    for (const check of AUTH_BYPASS_PATTERNS) {
-      if (!check.language.includes(ext)) continue;
-      // Skip commented-out auth patterns in test/example/docs files
-      if (
-        isTestFile &&
-        (check.title.includes("Commented-out") || check.title.includes("Intentional"))
-      ) {
-        continue;
-      }
-      const match = line.match(check.pattern);
-      if (match) {
-        findings.push({
-          rule: "auth-bypass/source-pattern",
-          title: check.title,
-          description: check.description,
-          severity: check.severity,
-          location: {
-            source: filePath,
-            line: i + 1,
-            field: "source_code",
-            snippet: line.trim().slice(0, 200),
-          },
-          owasp: "A05:2025 - Broken Access Control",
-          remediation: check.remediation,
-        });
+  // Check for auth bypass patterns (commented-out code, if(false), SSL disabled, etc.)
+  // Test/example files are excluded entirely — SSL disabled and auth bypass patterns
+  // appear legitimately in test infrastructure (e.g. verify=False for local self-signed certs).
+  if (!isTestFile) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      for (const check of AUTH_BYPASS_PATTERNS) {
+        if (!check.language.includes(ext)) continue;
+        const match = line.match(check.pattern);
+        if (match) {
+          findings.push({
+            rule: "auth-bypass/source-pattern",
+            title: check.title,
+            description: check.description,
+            severity: check.severity,
+            location: {
+              source: filePath,
+              line: i + 1,
+              field: "source_code",
+              snippet: line.trim().slice(0, 200),
+            },
+            owasp: "A05:2025 - Broken Access Control",
+            remediation: check.remediation,
+          });
+        }
       }
     }
   }
