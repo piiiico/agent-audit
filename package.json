@@ -1,6 +1,6 @@
 {
   "name": "@piiiico/agent-audit",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Security scanner for AI agent tooling — MCP servers, tool definitions, and agentic pipelines",
   "keywords": [
     "security",

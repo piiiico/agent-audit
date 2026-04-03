@@ -27,7 +27,7 @@ import {
 import { scan } from "./scanner.js";
 import type { MCPServer, Severity } from "./types.js";
 
-const VERSION = "0.2.2";
+const VERSION = "0.2.3";
 
 const server = new Server(
   { name: "agent-audit", version: VERSION },
