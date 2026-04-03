@@ -95,6 +95,33 @@ npm install -g @piiiico/agent-audit
 npx @piiiico/agent-audit --auto
 ```
 
+## MCP Server (Use from Claude Desktop)
+
+agent-audit now runs as an MCP server — audit your configs directly inside Claude.
+
+**Add to `claude_desktop_config.json`:**
+
+```json
+{
+  "mcpServers": {
+    "agent-audit": {
+      "command": "npx",
+      "args": ["-y", "@piiiico/agent-audit", "--mcp"]
+    }
+  }
+}
+```
+
+Then ask Claude: *"Audit my MCP config"* or *"Scan this server for security issues"*.
+
+**Available tools:**
+
+| Tool | Description |
+|------|-------------|
+| `audit_config` | Scan a config file (auto-detects Claude Desktop if no path given) |
+| `audit_all_configs` | Scan all detected configs (Claude Desktop + Cursor) |
+| `scan_server` | Scan a single server definition before adding it to your config |
+
 ## Usage
 
 ```bash

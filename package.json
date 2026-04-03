@@ -24,17 +24,21 @@
     "src/"
   ],
   "bin": {
-    "agent-audit": "./dist/cli.js"
+    "agent-audit": "./dist/cli.js",
+    "agent-audit-mcp": "./dist/mcp-server.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "bun build src/cli.ts --outdir dist --target node --format esm && bun build src/index.ts --outdir dist --target node --format esm",
+    "build": "bun build src/cli.ts --outdir dist --target node --format esm && bun build src/index.ts --outdir dist --target node --format esm && bun build src/mcp-server.ts --outdir dist --target node --format esm",
     "dev": "bun run src/cli.ts",
     "test": "bun test --path-ignore-patterns 'scan-targets' --path-ignore-patterns 'examples'"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "bun-types": "latest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
   }
 }

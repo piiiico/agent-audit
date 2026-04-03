@@ -96,6 +96,13 @@ async function main() {
     process.exit(0);
   }
 
+  // MCP server mode — launch MCP server instead of CLI
+  if (args.includes("--mcp")) {
+    const { startMcpServer } = await import("./mcp-server.js");
+    await startMcpServer();
+    return;
+  }
+
   const jsonOutput = args.includes("--json");
   const autoDetect = args.includes("--auto");
   const cursorMode = args.includes("--cursor");
