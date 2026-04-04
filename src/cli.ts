@@ -25,7 +25,7 @@ import { renderTerminalReport, getExitCode } from "./reporters/terminal.js";
 import { renderJsonReport } from "./reporters/json.js";
 import type { Severity } from "./types.js";
 
-const VERSION = "0.2.3";
+const VERSION = "0.3.0";
 
 function printHelp() {
   console.log(`
