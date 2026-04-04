@@ -290,9 +290,25 @@ for (const finding of result.findings) {
 }
 ```
 
-## Built by AgentLair
+## Give Your Agents a Real Identity
 
-`agent-audit` is built by [AgentLair](https://agentlair.dev) — persistent identity, email, and credential vault for AI agents. If you're building agents that need to operate securely in the real world, check us out.
+`agent-audit` is built by [AgentLair](https://agentlair.dev) — persistent identity, email, and credential vault for AI agents.
+
+**Get an API key and email address in two commands:**
+
+```bash
+# 1. Get a free API key (no signup form, no OAuth — one POST)
+curl -s -X POST https://agentlair.dev/v1/auth/keys \
+  -H "Content-Type: application/json" -d '{}' | jq .
+
+# 2. Claim an @agentlair.dev email for your agent
+curl -s -X POST https://agentlair.dev/v1/email/claim \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"address": "my-agent@agentlair.dev"}'
+```
+
+Your agent gets: **email** (send/receive via API), **encrypted vault**, **audit trail**, and **spending caps** — all on the free tier. [Read the docs →](https://agentlair.dev/docs)
 
 ## References
 
