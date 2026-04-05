@@ -15,5 +15,9 @@
   ],
   "author": "piiiico",
   "license": "MIT",
-  "repository": "https://github.com/piiiico/agent-audit"
+  "repository": "https://github.com/piiiico/agent-audit",
+  "installConfig": {
+    "command": "npx",
+    "args": ["-y", "@piiiico/agent-audit", "--mcp"]
+  }
 }
