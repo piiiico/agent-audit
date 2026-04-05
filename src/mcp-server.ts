@@ -27,7 +27,7 @@ import {
 import { scan } from "./scanner.js";
 import type { MCPServer, Severity } from "./types.js";
 
-const VERSION = "0.3.0";
+const VERSION = "0.3.2";
 
 const server = new Server(
   { name: "agent-audit", version: VERSION },
@@ -281,8 +281,15 @@ export async function startMcpServer() {
   process.stderr.write(`agent-audit MCP server v${VERSION} started\n`);
 }
 
-// Run as standalone entry point
-startMcpServer().catch((err) => {
-  process.stderr.write(`Fatal: ${err}\n`);
-  process.exit(1);
-});
+// Run as standalone entry point (only when executed directly, not imported)
+const isDirectRun =
+  process.argv[1]?.endsWith("mcp-server.js") ||
+  process.argv[1]?.endsWith("mcp-server.ts") ||
+  process.argv[1]?.endsWith("agent-audit-mcp");
+
+if (isDirectRun) {
+  startMcpServer().catch((err) => {
+    process.stderr.write(`Fatal: ${err}\n`);
+    process.exit(1);
+  });
+}
