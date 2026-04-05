@@ -1,1 +1,19 @@
-{"$schema":"https://glama.ai/mcp/schemas/server.json","maintainers":["piiiico"]}
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": [
+    "piiiico"
+  ],
+  "name": "agent-audit",
+  "description": "Security scanner for MCP servers detecting prompt injection, command injection, auth bypass, and excessive permissions.",
+  "category": "Security",
+  "tags": [
+    "security",
+    "mcp",
+    "scanner",
+    "prompt-injection",
+    "audit"
+  ],
+  "author": "piiiico",
+  "license": "MIT",
+  "repository": "https://github.com/piiiico/agent-audit"
+}
