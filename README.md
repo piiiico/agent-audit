@@ -1,5 +1,7 @@
 # agent-audit
 
+[![smithery badge](https://smithery.ai/badge/@piiiico/agent-audit)](https://smithery.ai/server/@piiiico/agent-audit)
+
 **Security scanner for MCP servers and AI agent tooling.**
 
 Catch prompt injection, command injection, hardcoded secrets, and excessive permissions in your MCP server configurations — before attackers do.
@@ -308,7 +310,7 @@ curl -s -X POST https://agentlair.dev/v1/email/claim \
   -d '{"address": "my-agent@agentlair.dev"}'
 ```
 
-Your agent gets: **email** (send/receive via API), **encrypted vault**, **audit trail**, and **spending caps** — all on the free tier. [Read the docs →](https://agentlair.dev/docs)
+Your agent gets: **email** (send/receive via API), **encrypted vault**, **audit trail**, and **spending caps** — all on the free tier. [Getting started guide →](https://agentlair.dev/getting-started)
 
 ## References
 
