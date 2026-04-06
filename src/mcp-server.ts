@@ -293,3 +293,10 @@ if (isDirectRun) {
     process.exit(1);
   });
 }
+
+// Smithery sandbox export — allows Smithery to scan available tools
+export function createSandboxServer() {
+  return server;
+}
+
+export default createSandboxServer;
