@@ -1,6 +1,6 @@
 {
   "name": "@piiiico/agent-audit",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Security scanner for AI agent tooling — MCP servers, tool definitions, and agentic pipelines",
   "keywords": [
     "security",
@@ -36,7 +36,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "wrangler": "^4.80.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
