@@ -135,6 +135,8 @@ export function renderTerminalReport(result: ScanResult): void {
   }
 
   console.log();
+  console.log(`⭐ If agent-audit helps you, star the repo: https://github.com/piiiico/agent-audit`);
+  console.log();
 }
 
 export function getExitCode(result: ScanResult): number {

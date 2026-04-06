@@ -1,8 +1,12 @@
 # agent-audit
 
 [![smithery badge](https://smithery.ai/badge/@piiiico/agent-audit)](https://smithery.ai/server/@piiiico/agent-audit)
+[![npm downloads](https://img.shields.io/npm/dw/@piiiico/agent-audit)](https://www.npmjs.com/package/@piiiico/agent-audit)
+[![GitHub stars](https://img.shields.io/github/stars/piiiico/agent-audit?style=social)](https://github.com/piiiico/agent-audit)
 
 **Security scanner for MCP servers and AI agent tooling.**
+
+> ⭐ **If agent-audit finds something in your config, please star the repo** — it helps others discover it too.
 
 Catch prompt injection, command injection, hardcoded secrets, and excessive permissions in your MCP server configurations — before attackers do.
 
