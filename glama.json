@@ -18,6 +18,6 @@
   "repository": "https://github.com/piiiico/agent-audit",
   "installConfig": {
     "command": "npx",
-    "args": ["-y", "@piiiico/agent-audit", "--mcp"]
+    "args": ["-y", "@piiiico/agent-audit@latest", "--mcp"]
   }
 }
