@@ -164,16 +164,24 @@ agent-audit --auto --no-source
 
 Use `--all` to scan both Claude Desktop and Cursor configs in one run.
 
-## GitHub Actions
+## CI/CD Integration
 
-### Quick setup (npx)
+### Minimal setup
+
+```yaml
+- uses: piiiico/agent-audit@v1
+  with:
+    config-path: claude_desktop_config.json
+```
+
+### Quick npx setup (no action required)
 
 ```yaml
 - name: Scan MCP servers
   run: npx --yes @piiiico/agent-audit <your-config.json> --json --min-severity high
 ```
 
-### Reusable action
+### Reusable action (full options)
 
 ```yaml
 - name: Scan MCP servers
