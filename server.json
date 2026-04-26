@@ -1,4 +1,26 @@
 {
-  "$schema": "https://glama.ai/mcp/schemas/server.json",
-  "maintainers": ["piiiico"]
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.piiiico/agent-audit",
+  "description": "Security scanner for MCP servers detecting prompt injection, command injection, auth bypass, and excessive permissions.",
+  "repository": {
+    "url": "https://github.com/piiiico/agent-audit",
+    "source": "github"
+  },
+  "version": "0.3.4",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@piiiico/agent-audit",
+      "version": "0.3.4",
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "--mcp"
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
 }

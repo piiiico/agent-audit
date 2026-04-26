@@ -27,7 +27,7 @@ import {
 import { scan } from "./scanner.js";
 import type { MCPServer, Severity } from "./types.js";
 
-const VERSION = "0.3.2";
+const VERSION = "0.3.4";
 
 const server = new Server(
   { name: "agent-audit", version: VERSION },
@@ -39,76 +39,98 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "audit_config",
       description:
-        "Scan an MCP config file for security vulnerabilities. If no path is provided, auto-detects Claude Desktop config. Returns a JSON security report with findings grouped by severity.",
+        "Scan an MCP server configuration file for security vulnerabilities. " +
+        "Use this tool to audit a specific config file path, or let it auto-detect the Claude Desktop configuration when no path is provided. " +
+        "Checks each configured MCP server for: prompt injection patterns in tool descriptions, command injection in server source code, hardcoded secrets in environment variables, and excessive permissions (shell execution, filesystem access). " +
+        "Returns a structured security report with findings grouped by severity (critical/high/medium/low/info). Each finding includes the vulnerable location, a code snippet, OWASP category, and remediation guidance. " +
+        "Use this when auditing a single config file. Use audit_all_configs instead when you want to scan all detected configs at once.",
       inputSchema: {
         type: "object",
         properties: {
           path: {
             type: "string",
             description:
-              "Optional path to MCP config file (Claude Desktop JSON or Cursor mcp.json). If omitted, auto-detects Claude Desktop config.",
+              "Path to the MCP config file to scan (Claude Desktop JSON format or Cursor mcp.json). If omitted, auto-detects the Claude Desktop configuration from default OS locations.",
           },
           min_severity: {
             type: "string",
             enum: ["critical", "high", "medium", "low", "info"],
-            description: "Minimum severity to report (default: low)",
+            description:
+              "Minimum severity level to include in the report. Use 'critical' to see only the most serious issues, 'low' (default) for a comprehensive report, or 'info' for all findings.",
           },
           skip_source_scan: {
             type: "boolean",
             description:
-              "Skip source file scanning for faster results (default: false)",
+              "Set to true to skip scanning server source files for command injection patterns, returning results faster. Default is false (full scan including source analysis).",
           },
         },
         required: [],
+        additionalProperties: false,
       },
     },
     {
       name: "audit_all_configs",
       description:
-        "Scan all detected MCP configs (Claude Desktop + Cursor) for security vulnerabilities. Returns a combined JSON report.",
+        "Scan all detected MCP configuration files (Claude Desktop and Cursor) for security vulnerabilities in a single operation. " +
+        "Automatically discovers config files in standard OS locations, scans all configured MCP servers in each file, and combines the results into one report. " +
+        "Each finding includes severity, the vulnerable location, a code snippet, and remediation guidance. " +
+        "Use this for a comprehensive security audit across all MCP configurations without specifying individual paths. " +
+        "Use audit_config instead when you only need to scan a specific file or a non-standard config location.",
       inputSchema: {
         type: "object",
         properties: {
           min_severity: {
             type: "string",
             enum: ["critical", "high", "medium", "low", "info"],
-            description: "Minimum severity to report (default: low)",
+            description:
+              "Minimum severity level to include in the combined report. Defaults to 'low' (comprehensive). Use 'critical' or 'high' for CI/CD pipelines where you only care about blocking issues.",
           },
         },
         required: [],
+        additionalProperties: false,
       },
     },
     {
       name: "scan_server",
       description:
-        "Scan a specific MCP server definition for security issues. Useful for testing a single server before adding it to your config.",
+        "Scan a single MCP server definition for security vulnerabilities without requiring a full configuration file. " +
+        "Provide the server's command, arguments, and environment variables directly to evaluate it before adding it to your MCP config. " +
+        "Performs the same security checks as audit_config but for a single inline server definition. Source file scanning is skipped for speed. " +
+        "Use this when evaluating an unfamiliar MCP server before trusting it, or when testing a server definition that is not yet in a config file. " +
+        "Use audit_config or audit_all_configs when the server is already in a config file.",
       inputSchema: {
         type: "object",
         properties: {
           name: {
             type: "string",
-            description: "Server name (for display in results)",
+            description:
+              "A label for this server used to identify findings in the results. Required.",
           },
           command: {
             type: "string",
-            description: "Command to run the server (e.g. 'npx', 'node')",
+            description:
+              "The executable to run the server, e.g. 'npx', 'node', or 'python'. For HTTP servers, omit this and use 'url' instead.",
           },
           args: {
             type: "array",
             items: { type: "string" },
-            description: "Command arguments (e.g. ['-y', 'some-mcp-server'])",
+            description:
+              "Command-line arguments passed to the executable, e.g. ['-y', '@some/mcp-server']. The tool scans these for injection patterns.",
           },
           env: {
             type: "object",
-            description: "Environment variables for the server",
+            description:
+              "Environment variables passed to the server process, e.g. {\"API_KEY\": \"...\"}. The tool checks these for hardcoded secrets.",
             additionalProperties: { type: "string" },
           },
           url: {
             type: "string",
-            description: "URL for HTTP-based MCP servers",
+            description:
+              "Base URL for HTTP-based (SSE or streamable) MCP servers. Use this instead of 'command' for remote servers.",
           },
         },
         required: ["name"],
+        additionalProperties: false,
       },
     },
   ],
