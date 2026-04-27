@@ -97,6 +97,18 @@ Most security tools don't understand MCP. `agent-audit` does.
 
 📊 **[We scanned 12 popular MCP servers — read what we found](FINDINGS.md)**
 
+## How agent-audit compares
+
+| Tool | Focus | When to use | Cost |
+|------|-------|-------------|------|
+| **agent-audit** | MCP config audit | Pre-deployment, every PR, developer workstation | Free / OSS |
+| **ship-safe** | Full codebase + agent security | Comprehensive audit across LLM code, CI/CD, supply chain | Free CLI, API tokens per scan |
+| **Microsoft AGT** | Runtime policy enforcement | Production agents, enterprise compliance, Azure-deployed | Free / OSS (heavy setup) |
+| **MCP-Shield** | Runtime tool-call monitoring | Monitoring agents while they run | — |
+| **Manual review** | Human security audit | Compliance signoff, semantic judgment | $$$–$$$$ |
+
+agent-audit is the **shift-left** option: static analysis that runs before deployment, catches obvious MCP-specific issues in ~3 seconds, zero cost, no network calls. The others are heavier, broader, or later in the lifecycle. [Full comparison →](docs/competitive-landscape.md)
+
 ## Install
 
 ```bash
