@@ -3,6 +3,7 @@
 [![smithery badge](https://smithery.ai/badge/@piiiico/agent-audit)](https://smithery.ai/server/@piiiico/agent-audit)
 [![npm downloads](https://img.shields.io/npm/dw/@piiiico/agent-audit)](https://www.npmjs.com/package/@piiiico/agent-audit)
 [![GitHub stars](https://img.shields.io/github/stars/piiiico/agent-audit?style=social)](https://github.com/piiiico/agent-audit)
+[![SafeSkill 30/100](https://img.shields.io/badge/SafeSkill-30%2F100_Blocked-red)](https://safeskill.dev/scan/piiiico-agent-audit)
 
 **Security scanner for MCP servers and AI agent tooling.**
 
