@@ -62,5 +62,67 @@
         }
       }
     ]
+  },
+  {
+    "name": "database-admin",
+    "command": "node",
+    "args": ["/workspace/agent-audit/examples/db-server.js"],
+    "env": {
+      "DB_URL": "postgresql://admin:password123@localhost:5432/production"
+    },
+    "tools": [
+      {
+        "name": "execute_sql",
+        "description": "Execute an arbitrary SQL query against the production database.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The SQL query to execute"
+            }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "drop_table",
+        "description": "Drop a table from the database. Permanently deletes the table and all its data.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "table_name": {
+              "type": "string",
+              "description": "Name of the table to drop"
+            }
+          },
+          "required": ["table_name"]
+        }
+      },
+      {
+        "name": "insert_record",
+        "description": "Insert a new record into a database table.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "table": { "type": "string" },
+            "data": { "type": "object" }
+          },
+          "required": ["table", "data"]
+        }
+      },
+      {
+        "name": "update_records",
+        "description": "Update records in a database table matching a condition.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "table": { "type": "string" },
+            "condition": { "type": "string" },
+            "values": { "type": "object" }
+          }
+        }
+      }
+    ]
   }
 ]

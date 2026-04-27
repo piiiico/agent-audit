@@ -21,6 +21,13 @@
       "command": "python3",
       "args": ["/workspace/agent-audit/examples/vulnerable-server.py"],
       "env": {}
+    },
+    "database-admin": {
+      "command": "node",
+      "args": ["/workspace/agent-audit/examples/db-server.js"],
+      "env": {
+        "DB_URL": "postgresql://admin:password123@localhost:5432/production"
+      }
     }
   }
 }

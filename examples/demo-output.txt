@@ -1,11 +1,11 @@
-🔍 Scanning 3 MCP server(s)...
+🔍 Scanning 4 MCP server(s)...
 
 ────────────────────────────────────────────────────────────
 agent-audit — MCP Security Scanner
 ────────────────────────────────────────────────────────────
 Target:    examples/vulnerable-config-full.json
-Scanned:   2026-04-01T07:33:26.993Z
-Duration:  3ms
+Scanned:   2026-04-27T02:12:49.863Z
+Duration:  5ms
 ────────────────────────────────────────────────────────────
 
 [1] 🔴 CRITICAL
@@ -44,7 +44,103 @@ Duration:  3ms
     ▶ Fix: Scope the tool to specific allowed commands. Use allowlists, not blocklists. Consider whether a shell execution tool is necessary at all.
     ────────────────────────────────────────────────────────
 
-[4] 🟠 HIGH
+[4] 🔴 CRITICAL
+    Shell execution tool
+    Rule: excessive-permissions/high-risk-capability
+    Location: database-admin → tools.execute_sql
+    Snippet: Execute an arbitrary SQL query against the production database.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'execute_sql' in server 'database-admin': This tool appears to provide shell command execution capabilities. If not strictly scoped, this gives the agent (and any prompt injector) arbitrary code execution.
+
+    ▶ Fix: Scope the tool to specific allowed commands. Use allowlists, not blocklists. Consider whether a shell execution tool is necessary at all.
+    ────────────────────────────────────────────────────────
+
+[5] 🔴 CRITICAL
+    Database tool allows mutations without read-only mode
+    Rule: database-safety/database-write-without-readonly
+    Location: database-admin → tools.execute_sql
+    Snippet: Execute an arbitrary SQL query against the production database.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'execute_sql' in server 'database-admin' allows database mutations (write/insert/update/delete/etc.) but declares no read-only mode or flag. An agent with this tool can modify data without any safe-mode constraint.
+
+    ▶ Fix: Add a read_only parameter (default: true) that must be explicitly set to false for writes. Consider splitting into separate read and write tools.
+    ────────────────────────────────────────────────────────
+
+[6] 🔴 CRITICAL
+    Tool accepts arbitrary database queries without scope restriction
+    Rule: database-safety/unscoped-database-access
+    Location: database-admin → tools.execute_sql.inputSchema
+    Snippet: {"type":"object","properties":{"query":{"type":"string","description":"The SQL query to execute"}},"required":["query"]}
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'execute_sql' in server 'database-admin' accepts arbitrary SQL/queries with no allowlist restriction. Any SQL statement — including DROP TABLE, DELETE FROM, or data exfiltration queries — can be passed directly to the database.
+
+    ▶ Fix: Replace arbitrary query execution with scoped, purpose-built tools (e.g., get_user_by_id). If a query tool is required, implement an operation allowlist and use parameterized queries exclusively.
+    ────────────────────────────────────────────────────────
+
+[7] 🔴 CRITICAL
+    Database tool allows mutations without read-only mode
+    Rule: database-safety/database-write-without-readonly
+    Location: database-admin → tools.drop_table
+    Snippet: Drop a table from the database. Permanently deletes the table and all its data.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'drop_table' in server 'database-admin' allows database mutations (write/insert/update/delete/etc.) but declares no read-only mode or flag. An agent with this tool can modify data without any safe-mode constraint.
+
+    ▶ Fix: Add a read_only parameter (default: true) that must be explicitly set to false for writes. Consider splitting into separate read and write tools.
+    ────────────────────────────────────────────────────────
+
+[8] 🔴 CRITICAL
+    Database tool exposes destructive operations (DROP, TRUNCATE, DELETE ALL)
+    Rule: database-safety/database-destructive-operations
+    Location: database-admin → tools.drop_table
+    Snippet: Drop a table from the database. Permanently deletes the table and all its data.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'drop_table' in server 'database-admin' exposes destructive database operations. These cannot be undone — an agent (or prompt injector) invoking this tool can cause irreversible data loss.
+
+    ▶ Fix: Remove destructive operations from agent-accessible tools entirely, or gate them behind explicit human confirmation and backup verification.
+    ────────────────────────────────────────────────────────
+
+[9] 🔴 CRITICAL
+    Database tool allows mutations without read-only mode
+    Rule: database-safety/database-write-without-readonly
+    Location: database-admin → tools.insert_record
+    Snippet: Insert a new record into a database table.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'insert_record' in server 'database-admin' allows database mutations (write/insert/update/delete/etc.) but declares no read-only mode or flag. An agent with this tool can modify data without any safe-mode constraint.
+
+    ▶ Fix: Add a read_only parameter (default: true) that must be explicitly set to false for writes. Consider splitting into separate read and write tools.
+    ────────────────────────────────────────────────────────
+
+[10] 🔴 CRITICAL
+    Database tool allows mutations without read-only mode
+    Rule: database-safety/database-write-without-readonly
+    Location: database-admin → tools.update_records
+    Snippet: Update records in a database table matching a condition.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'update_records' in server 'database-admin' allows database mutations (write/insert/update/delete/etc.) but declares no read-only mode or flag. An agent with this tool can modify data without any safe-mode constraint.
+
+    ▶ Fix: Add a read_only parameter (default: true) that must be explicitly set to false for writes. Consider splitting into separate read and write tools.
+    ────────────────────────────────────────────────────────
+
+[11] 🔴 CRITICAL
+    Multiple database write tools without confirmation flow
+    Rule: database-safety/database-no-confirmation
+    Location: database-admin → tools
+    Snippet: execute_sql, drop_table, insert_record, update_records
+    OWASP: A05:2025 - Excessive Agency
+
+    Server 'database-admin' exposes 4 database write tools (execute_sql, drop_table, insert_record, update_records) with no confirmation or approval step in any of them. A manipulated agent can chain these tools to make large-scale irreversible changes without human oversight.
+
+    ▶ Fix: Add a confirmation parameter to each write tool, or introduce a separate confirm_operation tool that must be called before any mutation is applied. Implement human-in-the-loop for bulk or destructive operations.
+    ────────────────────────────────────────────────────────
+
+[12] 🟠 HIGH
     Shell interpreter as MCP server command
     Rule: command-injection/server-command
     Location: file-manager → command
@@ -56,7 +152,7 @@ Duration:  3ms
     ▶ Fix: Use a specific application binary as the command, not a shell interpreter. The application should validate all inputs.
     ────────────────────────────────────────────────────────
 
-[5] 🟠 HIGH
+[13] 🟠 HIGH
     Secret value hardcoded in MCP server config
     Rule: auth-bypass/env-secret-in-config
     Location: file-manager → env.AWS_ACCESS_KEY_ID
@@ -68,7 +164,7 @@ Duration:  3ms
     ▶ Fix: Use a shell variable reference ($MY_SECRET) or a secrets manager instead of hardcoding values in the MCP config file. The config file is stored in plaintext.
     ────────────────────────────────────────────────────────
 
-[6] 🟠 HIGH
+[14] 🟠 HIGH
     Secret value hardcoded in MCP server config
     Rule: auth-bypass/env-secret-in-config
     Location: file-manager → env.AWS_SECRET_ACCESS_KEY
@@ -80,7 +176,7 @@ Duration:  3ms
     ▶ Fix: Use a shell variable reference ($MY_SECRET) or a secrets manager instead of hardcoding values in the MCP config file. The config file is stored in plaintext.
     ────────────────────────────────────────────────────────
 
-[7] 🟠 HIGH
+[15] 🟠 HIGH
     Secret value hardcoded in MCP server config
     Rule: auth-bypass/env-secret-in-config
     Location: file-manager → env.DATABASE_PASSWORD
@@ -92,7 +188,7 @@ Duration:  3ms
     ▶ Fix: Use a shell variable reference ($MY_SECRET) or a secrets manager instead of hardcoding values in the MCP config file. The config file is stored in plaintext.
     ────────────────────────────────────────────────────────
 
-[8] 🟠 HIGH
+[16] 🟠 HIGH
     Secret value hardcoded in MCP server config
     Rule: auth-bypass/env-secret-in-config
     Location: file-manager → env.API_TOKEN
@@ -104,7 +200,7 @@ Duration:  3ms
     ▶ Fix: Use a shell variable reference ($MY_SECRET) or a secrets manager instead of hardcoding values in the MCP config file. The config file is stored in plaintext.
     ────────────────────────────────────────────────────────
 
-[9] 🟠 HIGH
+[17] 🟠 HIGH
     XML/HTML injection tags in tool description
     Rule: prompt-injection/tool-description
     Location: file-manager → tools.read_file.description
@@ -116,7 +212,7 @@ Duration:  3ms
     ▶ Fix: Review this tool description carefully. If this is a third-party MCP server, consider whether you trust the provider. Remove any tool with unexpected instruction-like language.
     ────────────────────────────────────────────────────────
 
-[10] 🟠 HIGH
+[18] 🟠 HIGH
     Filesystem access tool
     Rule: excessive-permissions/high-risk-capability
     Location: file-manager → tools.read_file
@@ -128,7 +224,7 @@ Duration:  3ms
     ▶ Fix: Restrict filesystem tools to specific directories. Implement path validation and canonicalization.
     ────────────────────────────────────────────────────────
 
-[11] 🟠 HIGH
+[19] 🟠 HIGH
     Database access tool
     Rule: excessive-permissions/high-risk-capability
     Location: file-manager → tools.search_database
@@ -140,7 +236,7 @@ Duration:  3ms
     ▶ Fix: Use parameterized queries only. Restrict the database user to minimum required privileges. Implement rate limiting.
     ────────────────────────────────────────────────────────
 
-[12] 🟠 HIGH
+[20] 🟠 HIGH
     Shell interpreter as MCP server command
     Rule: command-injection/server-command
     Location: web-search → command
@@ -152,7 +248,7 @@ Duration:  3ms
     ▶ Fix: Use a specific application binary as the command, not a shell interpreter. The application should validate all inputs.
     ────────────────────────────────────────────────────────
 
-[13] 🟠 HIGH
+[21] 🟠 HIGH
     Secret value hardcoded in MCP server config
     Rule: auth-bypass/env-secret-in-config
     Location: web-search → env.SEARCH_API_KEY
@@ -164,7 +260,7 @@ Duration:  3ms
     ▶ Fix: Use a shell variable reference ($MY_SECRET) or a secrets manager instead of hardcoding values in the MCP config file. The config file is stored in plaintext.
     ────────────────────────────────────────────────────────
 
-[14] 🟠 HIGH
+[22] 🟠 HIGH
     Role hijacking in tool description
     Rule: prompt-injection/tool-description
     Location: data-processor → tools.process.description
@@ -176,7 +272,7 @@ Duration:  3ms
     ▶ Fix: Review this tool description carefully. If this is a third-party MCP server, consider whether you trust the provider. Remove any tool with unexpected instruction-like language.
     ────────────────────────────────────────────────────────
 
-[15] 🟠 HIGH
+[23] 🟠 HIGH
     Jailbreak attempt in tool description
     Rule: prompt-injection/tool-description
     Location: data-processor → tools.process.description
@@ -188,7 +284,55 @@ Duration:  3ms
     ▶ Fix: Review this tool description carefully. If this is a third-party MCP server, consider whether you trust the provider. Remove any tool with unexpected instruction-like language.
     ────────────────────────────────────────────────────────
 
-[16] 🟡 MEDIUM
+[24] 🟠 HIGH
+    Shell interpreter as MCP server command
+    Rule: command-injection/server-command
+    Location: database-admin → command
+    Snippet: node
+    OWASP: A03:2025 - Insufficient Input/Output Validation
+
+    MCP server runs a shell interpreter directly. This provides maximum attack surface for command injection via tool arguments. (server: database-admin, command: node)
+
+    ▶ Fix: Use a specific application binary as the command, not a shell interpreter. The application should validate all inputs.
+    ────────────────────────────────────────────────────────
+
+[25] 🟠 HIGH
+    Database access tool
+    Rule: excessive-permissions/high-risk-capability
+    Location: database-admin → tools.drop_table
+    Snippet: Drop a table from the database. Permanently deletes the table and all its data.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'drop_table' in server 'database-admin': This tool provides direct database access. Without parameterized queries, this may allow SQL injection.
+
+    ▶ Fix: Use parameterized queries only. Restrict the database user to minimum required privileges. Implement rate limiting.
+    ────────────────────────────────────────────────────────
+
+[26] 🟠 HIGH
+    Database access tool
+    Rule: excessive-permissions/high-risk-capability
+    Location: database-admin → tools.insert_record
+    Snippet: Insert a new record into a database table.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'insert_record' in server 'database-admin': This tool provides direct database access. Without parameterized queries, this may allow SQL injection.
+
+    ▶ Fix: Use parameterized queries only. Restrict the database user to minimum required privileges. Implement rate limiting.
+    ────────────────────────────────────────────────────────
+
+[27] 🟠 HIGH
+    Database access tool
+    Rule: excessive-permissions/high-risk-capability
+    Location: database-admin → tools.update_records
+    Snippet: Update records in a database table matching a condition.
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'update_records' in server 'database-admin': This tool provides direct database access. Without parameterized queries, this may allow SQL injection.
+
+    ▶ Fix: Use parameterized queries only. Restrict the database user to minimum required privileges. Implement rate limiting.
+    ────────────────────────────────────────────────────────
+
+[28] 🟡 MEDIUM
     Tool missing input schema
     Rule: excessive-permissions/missing-input-schema
     Location: file-manager → tools.read_file.inputSchema
@@ -200,7 +344,7 @@ Duration:  3ms
     ▶ Fix: Add a JSON Schema inputSchema to define and validate all tool parameters.
     ────────────────────────────────────────────────────────
 
-[17] 🟡 MEDIUM
+[29] 🟡 MEDIUM
     Tool missing input schema
     Rule: excessive-permissions/missing-input-schema
     Location: file-manager → tools.run_command.inputSchema
@@ -215,9 +359,11 @@ Duration:  3ms
 ────────────────────────────────────────────────────────────
 Summary
 ────────────────────────────────────────────────────────────
-  🔴 CRITICAL 3
-  🟠 HIGH 12
+  🔴 CRITICAL 11
+  🟠 HIGH 16
   🟡 MEDIUM 2
 
-⛔ 3 critical finding(s) require immediate attention.
+⛔ 11 critical finding(s) require immediate attention.
+
+⭐ If agent-audit helps you, star the repo: https://github.com/piiiico/agent-audit
 

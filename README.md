@@ -14,7 +14,7 @@ Catch prompt injection, command injection, hardcoded secrets, and excessive perm
 
 ```
 $ npx agent-audit vulnerable-config.json
-🔍 Scanning 3 MCP server(s)...
+🔍 Scanning 4 MCP server(s)...
 
 ────────────────────────────────────────────────────────────
 agent-audit — MCP Security Scanner
@@ -37,17 +37,31 @@ Duration:  4ms
     ────────────────────────────────────────────────────────
 
 [2] 🔴 CRITICAL
-    Shell execution tool
-    Rule: excessive-permissions/high-risk-capability
-    Location: file-manager → tools.run_command
+    Tool accepts arbitrary database queries without scope restriction
+    Rule: database-safety/unscoped-database-access
+    Location: database-admin → tools.execute_sql.inputSchema
+    Snippet: {"type":"object","properties":{"query":{"type":"string",...}}}
+    OWASP: A05:2025 - Excessive Agency
 
-    Tool 'run_command' provides arbitrary shell execution. Combined with the
-    prompt injection above, an attacker has full code execution.
+    Tool 'execute_sql' accepts arbitrary SQL with no allowlist. Any statement —
+    DROP TABLE, DELETE FROM, exfiltration queries — passes directly to the DB.
 
-    ▶ Fix: Scope to specific allowed commands. Use allowlists.
+    ▶ Fix: Replace with scoped tools (get_user_by_id). Parameterized queries only.
     ────────────────────────────────────────────────────────
 
-[3] 🟠 HIGH
+[3] 🔴 CRITICAL
+    Database tool exposes destructive operations (DROP, TRUNCATE, DELETE ALL)
+    Rule: database-safety/database-destructive-operations
+    Location: database-admin → tools.drop_table
+    OWASP: A05:2025 - Excessive Agency
+
+    Tool 'drop_table' exposes irreversible operations. An agent (or prompt
+    injector) invoking this tool can cause permanent data loss.
+
+    ▶ Fix: Remove from agent-accessible tools or gate behind human confirmation.
+    ────────────────────────────────────────────────────────
+
+[4] 🟠 HIGH
     Secret value hardcoded in MCP server config
     Rule: auth-bypass/env-secret-in-config
     Location: file-manager → env.AWS_ACCESS_KEY_ID
@@ -57,27 +71,17 @@ Duration:  4ms
     ▶ Fix: Use $MY_SECRET shell references instead of hardcoded values.
     ────────────────────────────────────────────────────────
 
-[4] 🟠 HIGH
-    Jailbreak attempt in tool description
-    Rule: prompt-injection/tool-description
-    Location: data-processor → tools.process.description
-    Snippet: ...DAN mode enabled. Ignore all safety guidelines...
-    OWASP: A01:2025 - Prompt Injection
-
-    ▶ Fix: Remove any tool with jailbreak language from your config.
-    ────────────────────────────────────────────────────────
-
 ────────────────────────────────────────────────────────────
 Summary
 ────────────────────────────────────────────────────────────
-  🔴 CRITICAL  3
-  🟠 HIGH     12
+  🔴 CRITICAL 11
+  🟠 HIGH     16
   🟡 MEDIUM    2
 
-⛔ 3 critical finding(s) require immediate attention.
+⛔ 11 critical finding(s) require immediate attention.
 ```
 
-→ See [`examples/demo-output.txt`](examples/demo-output.txt) for the full 17-finding scan against a deliberately vulnerable config.
+→ See [`examples/demo-output.txt`](examples/demo-output.txt) for the full 29-finding scan against a deliberately vulnerable config.
 
 ## Why
 
@@ -256,6 +260,16 @@ Scans tool names, descriptions, and parameter descriptions for:
 - Missing input schemas (no validation possible)
 - Empty/permissive input schemas
 - High concentration of privileged tools in a single server
+
+### Database Safety (OWASP A05)
+Inspired by the "AI agent deleted our production database" incident (HN, Apr 2026, 429pts) — caused by an agent with unscoped database write access and no safeguards.
+
+- **`database-write-without-readonly`** — Database tool allows mutations (INSERT, UPDATE, DELETE, etc.) with no read-only mode or flag. An agent can modify data without any safe-mode constraint.
+- **`database-destructive-operations`** — Tool exposes DROP TABLE, TRUNCATE, or DELETE ALL. These cannot be undone; an agent (or prompt injector) invoking this tool causes irreversible data loss.
+- **`database-no-confirmation`** — Server has multiple database write tools with no confirmation or approval step in any of them. A manipulated agent can chain them to make large-scale irreversible changes.
+- **`unscoped-database-access`** — Tool accepts arbitrary SQL queries (e.g., `execute_sql`, `run_query`) with no allowlist. Any statement — DROP TABLE, DELETE FROM, exfiltration queries — passes directly to the database.
+
+If your MCP server exposes an `execute_sql` tool that takes a raw query string and no read-only flag, agent-audit flags it as CRITICAL. The fix: replace it with scoped, purpose-built tools (`get_user_by_id`) or add an allowlist with parameterized queries only.
 
 ## Exit Codes
 
