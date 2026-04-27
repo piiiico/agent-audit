@@ -83,6 +83,8 @@ Summary
 
 → See [`examples/demo-output.txt`](examples/demo-output.txt) for the full 29-finding scan against a deliberately vulnerable config.
 
+**New to agent-audit?** [Scan your own config in 30 seconds →](docs/quickstart.md)
+
 ## Why
 
 MCP (Model Context Protocol) servers extend what AI agents can do. This power comes with risk:
