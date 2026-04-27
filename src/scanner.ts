@@ -13,6 +13,8 @@ import {
   scanServerEnvForSecrets,
   scanToolForExcessivePermissions,
   scanServerForExcessivePermissions,
+  scanToolForDatabaseSafety,
+  scanServerForDatabaseSafety,
 } from "./rules/index.js";
 
 const SEVERITY_ORDER: Record<Severity, number> = {
@@ -52,10 +54,12 @@ export async function scan(
     for (const tool of server.tools ?? []) {
       allFindings.push(...scanToolForPromptInjection(tool, server));
       allFindings.push(...scanToolForExcessivePermissions(tool, server));
+      allFindings.push(...scanToolForDatabaseSafety(tool, server));
     }
 
     // 4. Server-level permission analysis
     allFindings.push(...scanServerForExcessivePermissions(server));
+    allFindings.push(...scanServerForDatabaseSafety(server));
 
     // 5. Source file scanning (if enabled)
     if (!options.skipSourceScan && server.sourceFiles) {

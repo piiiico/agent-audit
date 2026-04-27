@@ -11,3 +11,7 @@ export {
   scanToolForExcessivePermissions,
   scanServerForExcessivePermissions,
 } from "./excessive-permissions.js";
+export {
+  scanToolForDatabaseSafety,
+  scanServerForDatabaseSafety,
+} from "./database-safety.js";

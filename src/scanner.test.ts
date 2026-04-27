@@ -212,6 +212,154 @@ describe("Excessive permissions detection", () => {
   });
 });
 
+// ─── Database Safety ─────────────────────────────────────────────────────────
+
+describe("Database safety detection", () => {
+  test("detects arbitrary SQL execution tool (the DB deletion incident pattern)", async () => {
+    const servers: MCPServer[] = [
+      {
+        name: "db-server",
+        tools: [
+          {
+            name: "execute_sql",
+            description: "Execute a SQL query against the database",
+            inputSchema: {
+              type: "object",
+              properties: {
+                query: { type: "string", description: "SQL query to execute" },
+              },
+              required: ["query"],
+            },
+          },
+        ],
+      },
+    ];
+    const result = await scan(servers, "test");
+    expect(
+      result.findings.some((f) => f.rule === "database-safety/unscoped-database-access")
+    ).toBe(true);
+    expect(result.summary.critical).toBeGreaterThan(0);
+  });
+
+  test("detects database write tool without read-only flag", async () => {
+    const servers: MCPServer[] = [
+      {
+        name: "db-server",
+        tools: [
+          {
+            name: "insert_record",
+            description: "Insert a new record into the database table",
+            inputSchema: {
+              type: "object",
+              properties: {
+                table: { type: "string" },
+                data: { type: "object" },
+              },
+              required: ["table", "data"],
+            },
+          },
+        ],
+      },
+    ];
+    const result = await scan(servers, "test");
+    expect(
+      result.findings.some(
+        (f) => f.rule === "database-safety/database-write-without-readonly"
+      )
+    ).toBe(true);
+    expect(result.summary.critical).toBeGreaterThan(0);
+  });
+
+  test("detects destructive database operations (DROP, TRUNCATE)", async () => {
+    const servers: MCPServer[] = [
+      {
+        name: "db-server",
+        tools: [
+          {
+            name: "drop_table",
+            description: "Drop a database table permanently",
+            inputSchema: {
+              type: "object",
+              properties: {
+                table: { type: "string" },
+              },
+              required: ["table"],
+            },
+          },
+        ],
+      },
+    ];
+    const result = await scan(servers, "test");
+    expect(
+      result.findings.some(
+        (f) => f.rule === "database-safety/database-destructive-operations"
+      )
+    ).toBe(true);
+    expect(result.summary.critical).toBeGreaterThan(0);
+  });
+
+  test("detects multiple write tools without confirmation flow", async () => {
+    const servers: MCPServer[] = [
+      {
+        name: "db-server",
+        tools: [
+          {
+            name: "insert_user",
+            description: "Insert a user record into the database",
+            inputSchema: {
+              type: "object",
+              properties: { name: { type: "string" } },
+              required: ["name"],
+            },
+          },
+          {
+            name: "update_user",
+            description: "Update an existing user record in the database",
+            inputSchema: {
+              type: "object",
+              properties: { id: { type: "string" }, data: { type: "object" } },
+              required: ["id", "data"],
+            },
+          },
+        ],
+      },
+    ];
+    const result = await scan(servers, "test");
+    expect(
+      result.findings.some(
+        (f) => f.rule === "database-safety/database-no-confirmation"
+      )
+    ).toBe(true);
+    expect(result.summary.critical).toBeGreaterThan(0);
+  });
+
+  test("read-only database tool produces no write-related findings", async () => {
+    const servers: MCPServer[] = [
+      {
+        name: "db-server",
+        tools: [
+          {
+            name: "get_user",
+            description: "Retrieve a user record from the database (read-only)",
+            inputSchema: {
+              type: "object",
+              properties: { id: { type: "string", description: "User ID" } },
+              required: ["id"],
+            },
+          },
+        ],
+      },
+    ];
+    const result = await scan(servers, "test");
+    const dbWriteFindings = result.findings.filter(
+      (f) =>
+        f.rule === "database-safety/database-write-without-readonly" ||
+        f.rule === "database-safety/database-no-confirmation"
+    );
+    expect(dbWriteFindings.length).toBe(0);
+  });
+});
+
 // ─── Summary Counts ──────────────────────────────────────────────────────────
 
 describe("Summary counts", () => {
