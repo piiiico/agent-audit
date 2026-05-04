@@ -15,3 +15,4 @@ export {
   scanToolForDatabaseSafety,
   scanServerForDatabaseSafety,
 } from "./database-safety.js";
+export { scanSourceFileForSSRFIncompleteValidator } from "./ssrf-incomplete-validator.js";

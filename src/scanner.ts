@@ -15,6 +15,7 @@ import {
   scanServerForExcessivePermissions,
   scanToolForDatabaseSafety,
   scanServerForDatabaseSafety,
+  scanSourceFileForSSRFIncompleteValidator,
 } from "./rules/index.js";
 
 const SEVERITY_ORDER: Record<Severity, number> = {
@@ -66,6 +67,7 @@ export async function scan(
       for (const filePath of server.sourceFiles) {
         allFindings.push(...scanSourceFileForCommandInjection(filePath, server.name));
         allFindings.push(...scanSourceFileForAuthBypass(filePath, server.name));
+        allFindings.push(...scanSourceFileForSSRFIncompleteValidator(filePath, server.name));
       }
     }
   }
