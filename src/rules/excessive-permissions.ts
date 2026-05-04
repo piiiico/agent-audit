@@ -42,10 +42,10 @@ const HIGH_RISK_TOOL_PATTERNS: Array<{
     pattern: /(?:network|http|fetch|request|download|upload|curl|wget)\b/i,
     title: "Network access tool",
     description:
-      "This tool provides outbound network access. This could be abused for data exfiltration or SSRF attacks.",
+      "This tool provides outbound network access. This could be abused for SSRF attacks — directing the server to fetch internal resources (cloud metadata at 169.254.169.254, Docker bridge networks, local services) or exfiltrate data.",
     severity: "medium",
     remediation:
-      "Implement allowlists for permitted domains/IPs. Log all outbound requests. Consider whether arbitrary URL fetching is necessary.",
+      "Use `ssrf-req-filter` (npm) or pre-resolve the hostname server-side (DNS lookup → validate resulting IP) before making the request. Naive string/regex checks on the URL are bypassable via: IPv6 loopback (::1), Docker CIDRs (172.16.0.0/12), octal/hex encoding (http://0177.0.0.1/, http://0x7f000001/), and DNS rebinding (a public hostname that resolves to a private IP after your check passes). If arbitrary URL fetching is not required, replace with an explicit domain allowlist.",
   },
   {
     pattern: /(?:database|db|sql|query|mongo|redis|postgres|mysql)\b/i,
